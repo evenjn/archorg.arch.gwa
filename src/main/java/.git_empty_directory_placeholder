@@ -5,4 +5,4 @@ directory that contains it contains some other files (either at the same level,
 or in some descendant directory). However it is best to keep this file even if
 there are other files in the directory, just in case a change causes the
 directory to be empty again. In such a case, this file will ensure that the
-directory still gets created.    
+directory still gets created.

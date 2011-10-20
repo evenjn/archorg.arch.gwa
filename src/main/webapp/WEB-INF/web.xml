@@ -6,14 +6,14 @@
   <!-- Servlets -->
   <servlet>
     <servlet-name>greetServlet</servlet-name>
-    <servlet-class>egenorg.egen.googlewebapplication.server.GreetingServiceImpl</servlet-class>
+    <servlet-class>archorg.arch.gwa.server.GreetingServiceImpl</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>greetServlet</servlet-name>
-    <url-pattern>/egenorg_egen_googlewebapplication/greet</url-pattern>
+    <url-pattern>/archorg_arch_gwa/greet</url-pattern>
   </servlet-mapping>
   <!-- Default page to serve -->
   <welcome-file-list>
-    <welcome-file>Egenorg_egen_googlewebapplication.html</welcome-file>
+    <welcome-file>Archorg_arch_gwa.html</welcome-file>
   </welcome-file-list>
 </web-app>
