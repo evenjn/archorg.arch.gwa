@@ -2,7 +2,7 @@
 <classpath>
   <classpathentry
     kind="src"
-    path="target/webapp" />
+    path="src/main/webapp" />
   <classpathentry
     kind="con"
     path="org.eclipse.wst.jsdt.launching.JRE_CONTAINER" />
