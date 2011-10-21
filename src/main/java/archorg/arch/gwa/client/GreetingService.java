@@ -1,4 +1,4 @@
-package egenorg.egen.googlewebapplication.client;
+package archorg.arch.gwa.client;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;

@@ -1,9 +1,10 @@
-package egenorg.egen.googlewebapplication.server;
+package archorg.arch.gwa.server;
+
+import archorg.arch.gwa.client.GreetingService;
+import archorg.arch.gwa.shared.FieldVerifier;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
-import egenorg.egen.googlewebapplication.client.GreetingService;
-import egenorg.egen.googlewebapplication.shared.FieldVerifier;
 
 /**
  * The server side implementation of the RPC service.

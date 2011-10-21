@@ -1,6 +1,7 @@
-package egenorg.egen.googlewebapplication.client;
+package archorg.arch.gwa.client;
 
-import egenorg.egen.googlewebapplication.shared.FieldVerifier;
+import archorg.arch.gwa.shared.FieldVerifier;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -20,7 +21,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class Egenorg_egen_googlewebapplication implements EntryPoint
+public class Archorg_arch_gwa implements EntryPoint
 {
   /**
    * The message displayed to the user when the server cannot be reached or

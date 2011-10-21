@@ -1,4 +1,4 @@
-package egenorg.egen.googlewebapplication.shared;
+package archorg.arch.gwa.shared;
 
 /**
  * <p>
