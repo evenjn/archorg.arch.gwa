@@ -104,5 +104,10 @@
       <version>2.3.0</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>it.celi.research</groupId>
+      <artifactId>balrog.beacon</artifactId>
+      <version>0.1.1</version>
+    </dependency>
   </dependencies>
 </project>

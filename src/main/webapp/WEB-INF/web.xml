@@ -9,12 +9,12 @@
   <display-name>archorg.arch.gwa</display-name>
   <!-- Servlets -->
   <servlet>
-    <servlet-name>greetServlet</servlet-name>
-    <servlet-class>archorg.arch.gwa.server.GreetingServiceImpl</servlet-class>
+    <servlet-name>ss</servlet-name>
+    <servlet-class>archorg.arch.gwa.server.ServiceImpl</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>greetServlet</servlet-name>
-    <url-pattern>/archorg_arch_gwa/greet</url-pattern>
+    <servlet-name>ss</servlet-name>
+    <url-pattern>/archorg_arch_gwa/serviz</url-pattern>
   </servlet-mapping>
   <!-- Default page to serve -->
   <welcome-file-list>
