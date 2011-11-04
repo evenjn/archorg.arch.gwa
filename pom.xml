@@ -107,7 +107,7 @@
     <dependency>
       <groupId>it.celi.research</groupId>
       <artifactId>balrog.beacon</artifactId>
-      <version>0.1.1</version>
+      <version>0.1.2</version>
     </dependency>
   </dependencies>
 </project>

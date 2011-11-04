@@ -5,18 +5,25 @@ import it.celi.research.balrog.beacon.BeaconImpl;
 import it.celi.research.balrog.beacon.BeaconReader;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import archorg.arch.gwa.client.Service;
 import archorg.arch.gwa.client.ServiceAsync;
 import archorg.arch.gwa.client.join.Actuator;
+import archorg.arch.gwa.client.serialization.SDeserialization;
+import archorg.arch.gwa.client.serialization.SSerializable;
+import archorg.arch.gwa.client.serialization.SSerialization;
+import archorg.arch.gwa.client.serialization.SSerializationFormatException;
 import archorg.arch.gwa.shared.Input;
 import archorg.arch.gwa.shared.Output;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public class RootModel
+public class RootModel implements SSerializable
 {
+  private boolean executed = false;
+
   private BeaconImpl<String> message_impl = new BeaconImpl<String>();
 
   private BeaconImpl<Integer> input_impl = new BeaconImpl<Integer>();
@@ -30,6 +37,8 @@ public class RootModel
   {
     Input inp = new Input();
     inp.input = input_impl.get();
+    executed = true;
+    // here we should save
     stub.serve(inp,
       new AsyncCallback<Output>()
       {
@@ -65,4 +74,48 @@ public class RootModel
       serve();
     }
   };
+
+  public void load(SDeserialization load,
+      String id,
+      boolean dryrun) throws SSerializationFormatException
+  {
+    Map<String, String> map = load.get(id,
+      dryrun);
+    if (map.containsKey("input"))
+    {
+      String s = map.get("input");
+      try
+      {
+        input_impl.setIfNotEqual(Integer.parseInt(s));
+      }
+      catch (NumberFormatException e)
+      {
+        throw new SSerializationFormatException("Integer.parseInt(" + s + ")");
+      }
+    } else
+    {
+      input_impl.resetToDefault(true);
+    }
+    serve();
+  }
+
+  @Override
+  public void dump(SSerialization s,
+      Map<String, String> map)
+  {
+    map.put("input",
+      input.get().toString());
+  }
+
+  @Override
+  public void resetToDefaults()
+  {
+    input_impl.resetToDefault(true);
+  }
+
+  @Override
+  public boolean isAtDefaults()
+  {
+    return input_impl.isAtDefault();
+  }
 }

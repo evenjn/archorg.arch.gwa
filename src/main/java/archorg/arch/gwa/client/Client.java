@@ -1,6 +1,9 @@
 package archorg.arch.gwa.client;
 
 import archorg.arch.gwa.client.model.RootModel;
+import archorg.arch.gwa.client.serialization.SDeserialization;
+import archorg.arch.gwa.client.serialization.SSerializationFormatException;
+import archorg.arch.gwa.client.serialization.SSerializer;
 import archorg.arch.gwa.client.view.RootView;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -12,9 +15,12 @@ import com.google.gwt.user.client.ui.RootPanel;
 
 public class Client implements EntryPoint
 {
+  RootModel rm;
+
   @Override
   public void onModuleLoad()
   {
+    rm = new RootModel();
     History.addValueChangeHandler(new ValueChangeHandler<String>()
     {
       public void onValueChange(ValueChangeEvent<String> event)
@@ -26,7 +32,6 @@ public class Client implements EntryPoint
     String token = History.getToken();
     if (token.length() != 0)
       processHistoryToken(token);
-    RootModel rm = new RootModel();
     RootView rv = new RootView(rm.input, rm.ask, rm.message, rm.results);
     RootPanel.get().add(rv);
   }
@@ -34,5 +39,19 @@ public class Client implements EntryPoint
   private void processHistoryToken(String historyToken)
   {
     String decode = URL.decodeQueryString(historyToken);
+    try
+    {
+      SDeserialization load = SSerializer.load(decode);
+      rm.load(load,
+        load.getRootID(),
+        true);
+      rm.load(load,
+        load.getRootID(),
+        false);
+    }
+    catch (SSerializationFormatException e)
+    {
+      // reset to default?
+    }
   }
 }

@@ -70,6 +70,7 @@ public class RootView extends Composite
           notice(Observable<? extends Change<? extends Iterable<? extends Integer>>> o,
               Change<? extends Iterable<? extends Integer>> change)
       {
+        results_panel.clear();
         for (Integer i : change.getNew())
         {
           String ss;
