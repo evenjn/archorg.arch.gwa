@@ -6,21 +6,17 @@ import java.util.Map.Entry;
 
 import com.google.gwt.http.client.URL;
 
-public class SSerializer
+public class StateSerializer
 {
-  private final static String outer2 = ";";
+  private final static String outer_separator = ";";
 
-  private final static String outer1 = ":";
+  private final static String outer_assignment = ":";
 
   private final static String re_outer = "[:;]";
 
-  private final static String inner1 = "=";
+  private final static String inner_assignment = "=";
 
-  private final static String re_inner1 = "=";
-
-  private final static String inner2 = ",";
-
-  private final static String re_inner2 = ",";
+  private final static String inner_separator = ",";
 
   private final static String re_inner = "[=,]";
 
@@ -28,13 +24,13 @@ public class SSerializer
 
   private final static String empty_symbol = "@";
 
-  private static class SSI implements SSerialization
+  private static class SSI implements StateSerialization
   {
     private String dump = null;
 
-    public SSI(SSerializable s)
+    public SSI(HasSerializableState s)
     {
-      if (s.isAtDefaults())
+      if (s.getSerializableState().isAtDefault())
       {
         dump = "!";
         return;
@@ -49,10 +45,10 @@ public class SSerializer
           sb = new StringBuilder();
           sb.append("!");
         } else
-          sb.append(outer2);
+          sb.append(outer_separator);
         iz = new Integer(i);
         sb.append(iz);
-        sb.append(outer1);
+        sb.append(outer_assignment);
         sb.append(map_s.get(iz.toString()));
       }
       dump = sb.toString();
@@ -60,12 +56,13 @@ public class SSerializer
 
     private int sequence = 0;
 
-    private HashMap<SSerializable, String> map =
-      new HashMap<SSerializable, String>();
+    private HashMap<HasSerializableState, String> map =
+      new HashMap<HasSerializableState, String>();
 
     private HashMap<String, String> map_s = new HashMap<String, String>();
 
-    public String getID(SSerializable s)
+    public String getID(HasSerializableState s) // rename this method to a more
+                                                // suitable name
     {
       String id = map.get(s);
       if (id != null)
@@ -76,7 +73,7 @@ public class SSerializer
         id);
       StringBuilder sb = null;
       HashMap<String, String> dump = new HashMap<String, String>();
-      s.dump(this,
+      s.getSerializableState().dump(this,
         dump);
       for (Entry<String, String> o : dump.entrySet())
       {
@@ -84,9 +81,9 @@ public class SSerializer
         {
           sb = new StringBuilder();
         } else
-          sb.append(inner2);
+          sb.append(inner_separator);
         sb.append(escape(o.getKey()));
-        sb.append(inner1);
+        sb.append(inner_assignment);
         sb.append(escape(o.getValue()));
       }
       map_s.put(id,
@@ -95,58 +92,59 @@ public class SSerializer
     }
   }
 
-  public static String dump(SSerializable s)
+  public static String dump(HasSerializableState s)
   {
     SSI ser = new SSI(s);
     return ser.dump;
   }
 
-  public static SDeserialization load(String s)
-      throws SSerializationFormatException
+  public static StateDeserialization load(String s)
+      throws StateSerializationFormatException
   {
     return new DSI(s);
   }
 
-  private static class DSI implements SDeserialization
+  private static class DSI implements StateDeserialization
   {
     HashMap<String, Map<String, String>> map_s =
       new HashMap<String, Map<String, String>>();
 
-    private DSI(String s) throws SSerializationFormatException
+    private DSI(String s) throws StateSerializationFormatException
     {
       if (!s.startsWith("!"))
-        throw new SSerializationFormatException("empty string");
+        throw new StateSerializationFormatException("empty string");
       if (s.length() == 1)
-        throw new SSerializationFormatException("default state");
+        throw new StateSerializationFormatException("default state");
       if (s.length() < 2)
-        throw new SSerializationFormatException("too short");
+        throw new StateSerializationFormatException("too short");
       s = s.substring(1);
       String[] split = s.split(re_outer);
       if (split.length == 0)
-        throw new SSerializationFormatException("no components");
+        throw new StateSerializationFormatException("no components");
       if (split.length % 2 == 1)
-        throw new SSerializationFormatException("odd number of components");
+        throw new StateSerializationFormatException("odd number of components");
       boolean is_id = false;
       String id = null;
       for (String current : split)
       {
         if (current.isEmpty())
-          throw new SSerializationFormatException("empty outer segment");
+          throw new StateSerializationFormatException("empty outer segment");
         is_id = !is_id;
         if (is_id)
         {
           if (!current.matches("[0-9]+"))
-            throw new SSerializationFormatException("bad_entity_name");
+            throw new StateSerializationFormatException("bad_entity_name");
           id = current;
         } else
         {
-          if (!current.contains(inner1))
-            throw new SSerializationFormatException("no inner splitter");
+          if (!current.contains(inner_assignment))
+            throw new StateSerializationFormatException("no inner splitter");
           String[] split2 = current.split(re_inner);
           if (split2.length == 0)
-            throw new SSerializationFormatException("no components");
+            throw new StateSerializationFormatException("no components");
           if (split2.length % 2 == 1)
-            throw new SSerializationFormatException("odd number of components");
+            throw new StateSerializationFormatException(
+              "odd number of components");
           HashMap<String, String> map = new HashMap<String, String>();
           boolean is_fieldname = false;
           String fieldname = null;
@@ -154,16 +152,18 @@ public class SSerializer
           {
             is_fieldname = !is_fieldname;
             if (piece.isEmpty())
-              throw new SSerializationFormatException("empty inner segment");
+              throw new StateSerializationFormatException("empty inner segment");
             if (is_fieldname)
             {
               fieldname = piece;
               if (!fieldname.matches("[a-z]([a-z_]*[a-z])?"))
-                throw new SSerializationFormatException("bad_field_name");
+                throw new StateSerializationFormatException("bad_field_name");
             } else
               map.put(fieldname,
                 unescape(piece));
           }
+          if (map_s.containsKey(id))
+            throw new StateSerializationFormatException("duplicate key");
           map_s.put(id,
             map);
         }
@@ -171,7 +171,7 @@ public class SSerializer
     }
 
     public Map<String, String> get(String id,
-        boolean dryrun) throws SSerializationFormatException
+        boolean dryrun) throws StateSerializationFormatException
     {
       Map<String, String> result = map_s.get(id);
       if (!dryrun)
@@ -179,34 +179,16 @@ public class SSerializer
           map_s.put(id,
             null);
         else
-          throw new SSerializationFormatException(
+          throw new StateSerializationFormatException(
             "No such object available. The data structure is not a tree or the deserialization process is flawed");
       if (result == null)
       {
-        throw new SSerializationFormatException(
+        throw new StateSerializationFormatException(
           "No such object available. The data structure is not a tree or the deserialization process is flawed");
       }
       return result;
     }
 
-    // HashMap<String, SSerializable> map_des =
-    // new HashMap<String, SSerializable>();
-    //
-    // @Override
-    // public SSerializable getDeserialized(String id)
-    // {
-    // return map_des.get(id);
-    // }
-    //
-    // @Override
-    // public void putDeserialized(String id,
-    // SSerializable deserialized)
-    // {
-    // if (map_des.containsKey(id))
-    // throw new IllegalStateException("key already used");
-    // map_des.put(id,
-    // deserialized);
-    // }
     @Override
     public String getRootID()
     {
@@ -214,14 +196,15 @@ public class SSerializer
     }
   }
 
-  private static String unescape(String s) throws SSerializationFormatException
+  private static String unescape(String s)
+      throws StateSerializationFormatException
   {
     if (s.equals(null_symbol))
       return null;
     if (s.equals(empty_symbol))
       return "";
     if (!s.matches("[a-zA-Z0-9-_\\.!~\\*'\\(\\)%]+"))
-      throw new SSerializationFormatException(s);
+      throw new StateSerializationFormatException(s);
     return URL.decodeQueryString(s);
   }
 

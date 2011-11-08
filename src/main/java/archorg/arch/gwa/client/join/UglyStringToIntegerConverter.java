@@ -1,6 +1,6 @@
 package archorg.arch.gwa.client.join;
 
-public class StringToIntegerConverter extends Converter<String, Integer>
+public class UglyStringToIntegerConverter extends Converter<String, Integer>
 {
   @Override
   protected Integer in(String value)
@@ -14,7 +14,7 @@ public class StringToIntegerConverter extends Converter<String, Integer>
       }
       catch (NumberFormatException e)
       {
-        return null;
+        return 1;
       }
   }
 
@@ -22,7 +22,7 @@ public class StringToIntegerConverter extends Converter<String, Integer>
   protected String out(Integer value)
   {
     if (value == null)
-      return null;
+      return "";
     else
       return value.toString();
   }

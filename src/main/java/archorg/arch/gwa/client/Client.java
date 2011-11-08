@@ -1,57 +1,61 @@
 package archorg.arch.gwa.client;
 
+import it.celi.research.balrog.claudenda.Claudenda;
+import it.celi.research.balrog.claudenda.ClaudendaExceptionHandler;
+import it.celi.research.balrog.claudenda.ClaudendaForgottenHandler;
 import archorg.arch.gwa.client.model.RootModel;
-import archorg.arch.gwa.client.serialization.SDeserialization;
-import archorg.arch.gwa.client.serialization.SSerializationFormatException;
-import archorg.arch.gwa.client.serialization.SSerializer;
+import archorg.arch.gwa.client.serialization.URIStateManager;
 import archorg.arch.gwa.client.view.RootView;
 
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.http.client.URL;
-import com.google.gwt.user.client.History;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.RootPanel;
 
 public class Client implements EntryPoint
 {
-  RootModel rm;
+  public static final ServiceAsync stub = GWT.create(Service.class);
 
   @Override
   public void onModuleLoad()
   {
-    rm = new RootModel();
-    History.addValueChangeHandler(new ValueChangeHandler<String>()
+    // we are never going to get rid of the root model, but all models have to
+    // be closed with claudenda in order to unsubscribe the observers from the
+    // event channel that broadcasts the end of the state loading process in
+    // order to allow the restoration of non-transient state after the whole
+    // model has been loaded.
+    //
+    // we are never going to get rid of the rootview, but all views have to be
+    // closed with claudenda in order to unsubscribe the observers from the
+    // model
+    Claudenda clau = new Claudenda(getClass());
+    // create the model
+    final RootModel rm = new RootModel(clau);
+    // load the model state from the URL
+    URIStateManager.init(rm,
+      rm.getMessageBW());
+    // create the view, connected to the model
+    RootView rv =
+      new RootView(clau, rm.getHasChildB(), rm.getChildBR(), rm.getMessageBR());
+    Claudenda.setExceptionHandler(new ClaudendaExceptionHandler()
     {
-      public void onValueChange(ValueChangeEvent<String> event)
+      @Override
+      public void handle(Claudenda clau,
+          Exception e)
       {
-        String historyToken = event.getValue();
-        processHistoryToken(historyToken);
+        rm.getMessageBW()
+          .setNevertheless("Exception caught when closing claudenda.");
       }
     });
-    String token = History.getToken();
-    if (token.length() != 0)
-      processHistoryToken(token);
-    RootView rv = new RootView(rm.input, rm.ask, rm.message, rm.results);
+    Claudenda.setForgottenHandler(new ClaudendaForgottenHandler()
+    {
+      @Override
+      public void onForgotten(Claudenda clau)
+      {
+        rm.getMessageBW().setNevertheless("Forgot to close claudenda. "
+            + clau.getDescriptionForDeveloper());
+      }
+    });
+    // publish the view
     RootPanel.get().add(rv);
-  }
-
-  private void processHistoryToken(String historyToken)
-  {
-    String decode = URL.decodeQueryString(historyToken);
-    try
-    {
-      SDeserialization load = SSerializer.load(decode);
-      rm.load(load,
-        load.getRootID(),
-        true);
-      rm.load(load,
-        load.getRootID(),
-        false);
-    }
-    catch (SSerializationFormatException e)
-    {
-      // reset to default?
-    }
   }
 }

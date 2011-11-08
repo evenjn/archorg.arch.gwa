@@ -1,20 +1,23 @@
 package archorg.arch.gwa.client.join;
 
 import it.celi.research.balrog.beacon.Beacon;
+import it.celi.research.balrog.claudenda.Claudenda;
 
 import com.google.gwt.user.client.ui.HasValue;
 
 public class StringToFloatJoin extends Join<String, Float>
 {
-  public static void join(HasValue<String> widget,
+  public static void join(Claudenda clau,
+      HasValue<String> widget,
       Beacon<Float> beacon)
   {
-    new StringToFloatJoin(widget, beacon);
+    new StringToFloatJoin(clau, widget, beacon);
   }
 
-  protected StringToFloatJoin(HasValue<String> widget,
+  protected StringToFloatJoin(Claudenda clau,
+      HasValue<String> widget,
       Beacon<Float> beacon)
   {
-    super(new StringToFloatConverter(), widget, beacon);
+    super(clau, new StringToFloatConverter(), widget, beacon);
   }
 }
