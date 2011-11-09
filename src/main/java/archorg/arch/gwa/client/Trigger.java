@@ -18,6 +18,9 @@ import it.celi.research.balrog.event.Observable;
  * encapsulate this special behaviour inside a class that is not the usual
  * beaconobserver but a Trigger
  * 
+ * TODO there is a bug in that if many triggers trigger on the same event the
+ * state-save will resolve as soon as the first of the triggers is complete
+ * 
  * @author evenjn
  * 
  * @param <T>
