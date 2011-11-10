@@ -1,4 +1,4 @@
-package archorg.arch.gwa.client;
+package archorg.arch.gwa.client.uristate;
 
 import java.util.HashMap;
 import java.util.Map;

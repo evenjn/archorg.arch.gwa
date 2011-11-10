@@ -1,6 +1,9 @@
 package archorg.arch.gwa.client.beacon;
 
-import it.celi.research.balrog.beacon.BeaconImpl;
+import archorg.arch.gwa.client.serialization.TriggerBeacon;
 
-public class NullDefaultBeacon<T> extends BeaconImpl<T>
-{}
+public class NullDefaultBeacon<T> extends TriggerBeacon<T>
+{
+  public NullDefaultBeacon()
+  {}
+}

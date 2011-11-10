@@ -1,19 +1,20 @@
 package archorg.arch.gwa.client.model;
 
 import it.celi.research.balrog.beacon.Beacon;
-import it.celi.research.balrog.beacon.BeaconImpl;
 import it.celi.research.balrog.beacon.BeaconReader;
 import it.celi.research.balrog.beacon.BeaconWriter;
+import it.celi.research.balrog.beacon.Change;
+import it.celi.research.balrog.event.Observable;
 
 import java.util.ArrayList;
 
 import archorg.arch.gwa.client.Client;
-import archorg.arch.gwa.client.URIStateManager;
-import archorg.arch.gwa.client.join.Actuator;
 import archorg.arch.gwa.client.serialization.HasSerializableState;
 import archorg.arch.gwa.client.serialization.ReadableStateModel;
 import archorg.arch.gwa.client.serialization.SerializableState;
 import archorg.arch.gwa.client.serialization.StateSerializationFormatException;
+import archorg.arch.gwa.client.serialization.Trigger;
+import archorg.arch.gwa.client.serialization.TriggerBeacon;
 import archorg.arch.gwa.client.serialization.WritableStateModel;
 import archorg.arch.gwa.shared.Input;
 import archorg.arch.gwa.shared.Output;
@@ -24,27 +25,45 @@ public class ChildModel implements HasSerializableState
 {
   private final BeaconWriter<String> message_impl;
 
-  public ChildModel(BeaconWriter<String> message_impl)
+  public ChildModel(BeaconWriter<String> message_impl,
+      Trigger<Object> reset_message)
   {
     this.message_impl = message_impl;
+    action_impl.setSaveOnEvent(true);
+    action_impl.subscribe(new Trigger<Void>()
+    {
+      @Override
+      public void
+          onTrigger(Observable<? extends Change<? extends Void>> observable,
+              Change<? extends Void> message)
+      {
+        serve();
+      }
+    });
+    input_impl.subscribe(reset_message);
   }
 
-  private BeaconImpl<Integer> input_impl = new BeaconImpl<Integer>(1);
+  private TriggerBeacon<Void> action_impl = new TriggerBeacon<Void>(null);
+
+  public BeaconWriter<Void> getActionW()
+  {
+    return action_impl;
+  }
+
+  private TriggerBeacon<Integer> input_impl = new TriggerBeacon<Integer>(1);
 
   public Beacon<Integer> input = input_impl;
 
-  private BeaconImpl<ArrayList<Integer>> results_impl =
-    new BeaconImpl<ArrayList<Integer>>();
+  private TriggerBeacon<ArrayList<Integer>> results_impl =
+    new TriggerBeacon<ArrayList<Integer>>();
 
   public BeaconReader<? extends Iterable<? extends Integer>> results =
     results_impl;
 
   private void serve()
   {
-    // here maybe we want to save the action into a persistent part of the
-    // state, or as an "extra"
-    URIStateManager.store();
     Input inp = new Input();
+    message_impl.resetToDefault();
     inp.input = input_impl.get();
     Client.stub.serve(inp,
       new AsyncCallback<Output>()
@@ -65,15 +84,6 @@ public class ChildModel implements HasSerializableState
         }
       });
   }
-
-  public Actuator ask = new Actuator()
-  {
-    @Override
-    public void actuate()
-    {
-      serve();
-    }
-  };
 
   @Override
   public SerializableState getSerializableState()

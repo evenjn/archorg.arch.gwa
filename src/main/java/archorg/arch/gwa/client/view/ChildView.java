@@ -3,9 +3,9 @@ package archorg.arch.gwa.client.view;
 import it.celi.research.balrog.beacon.Beacon;
 import it.celi.research.balrog.beacon.BeaconObserver;
 import it.celi.research.balrog.beacon.BeaconReader;
+import it.celi.research.balrog.beacon.BeaconWriter;
 import it.celi.research.balrog.beacon.Change;
 import it.celi.research.balrog.event.Observable;
-import archorg.arch.gwa.client.join.Actuator;
 import archorg.arch.gwa.client.join.StringToIntegerJoin;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -25,7 +25,7 @@ public class ChildView extends Composite
   private TextBox box = new TextBox();
 
   public ChildView(final Beacon<Integer> input,
-      final Actuator go,
+      final BeaconWriter<Void> go,
       final BeaconReader<? extends Iterable<? extends Integer>> results)
   {
     StringToIntegerJoin.join(box,
@@ -36,7 +36,7 @@ public class ChildView extends Composite
       @Override
       public void onClick(ClickEvent event)
       {
-        go.actuate();
+        go.setNevertheless(null);
       }
     });
     results.subscribe(new BeaconObserver<Iterable<? extends Integer>>()

@@ -71,7 +71,8 @@ public class RootView extends Composite
         } else
         {
           ChildModel model = change.getNew();
-          childview = new ChildView(model.input, model.ask, model.results);
+          childview =
+            new ChildView(model.input, model.getActionW(), model.results);
         }
         redraw();
       }
@@ -81,7 +82,7 @@ public class RootView extends Composite
     if (child.isNotNull())
     {
       ChildModel model = child.get();
-      childview = new ChildView(model.input, model.ask, model.results);
+      childview = new ChildView(model.input, model.getActionW(), model.results);
     }
     redraw();
     initWidget(main);

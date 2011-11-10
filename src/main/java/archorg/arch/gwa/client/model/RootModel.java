@@ -1,18 +1,17 @@
 package archorg.arch.gwa.client.model;
 
 import it.celi.research.balrog.beacon.Beacon;
-import it.celi.research.balrog.beacon.BeaconImpl;
 import it.celi.research.balrog.beacon.BeaconReader;
 import it.celi.research.balrog.beacon.BeaconWriter;
 import it.celi.research.balrog.beacon.Change;
 import it.celi.research.balrog.event.Observable;
-import archorg.arch.gwa.client.Trigger;
-import archorg.arch.gwa.client.URIStateManager;
 import archorg.arch.gwa.client.beacon.NullDefaultBeacon;
 import archorg.arch.gwa.client.beacon.SerializableHasSerializableStateBeacon;
 import archorg.arch.gwa.client.serialization.CompositeSerializableState;
 import archorg.arch.gwa.client.serialization.HasSerializableState;
 import archorg.arch.gwa.client.serialization.SerializableState;
+import archorg.arch.gwa.client.serialization.Trigger;
+import archorg.arch.gwa.client.serialization.TriggerBeacon;
 
 /**
  * Because View objects are connected to Model objects with a double link (via a
@@ -27,10 +26,11 @@ import archorg.arch.gwa.client.serialization.SerializableState;
 public class RootModel implements HasSerializableState
 {
   // output only, transient
-  private BeaconImpl<String> message_impl = new BeaconImpl<String>(null);
+  private TriggerBeacon<String> message_impl = new TriggerBeacon<String>(null);
 
   // input/output only, non-transient
-  private BeaconImpl<Boolean> has_child_impl = new BeaconImpl<Boolean>(false);
+  private TriggerBeacon<Boolean> has_child_impl = new TriggerBeacon<Boolean>(
+    false);
 
   // output only, non-transient
   private NullDefaultBeacon<ChildModel> child_impl =
@@ -58,16 +58,11 @@ public class RootModel implements HasSerializableState
 
   public RootModel()
   {
-    // triggers will always resolve before serialization may occur
-    // it is important to dispose triggers (just like listeners) because they
-    // may hang on unreachable objects.
-    // objects
     has_child_impl.subscribe(create_child_trigger);
-    // serialization
+    has_child_impl.subscribe(reset_message_trigger);
+    child_impl.subscribe(reset_message_trigger);
+    has_child_impl.setSaveOnEvent(true);
     state = new MySerializableState();
-    // tells the hardlink manager to store the state whenever this observable
-    // broadcasts an event
-    URIStateManager.saveOnEvent(has_child_impl);
   }
 
   private Trigger<Boolean> create_child_trigger = new Trigger<Boolean>()
@@ -81,11 +76,23 @@ public class RootModel implements HasSerializableState
         return;
       if (message.getNew())
       {
-        child_impl.setNevertheless(new ChildModel(message_impl));
+        child_impl.setNevertheless(new ChildModel(message_impl,
+          reset_message_trigger));
       } else
       {
         child_impl.setIfNotEqual(null);
       }
+    }
+  };
+
+  private Trigger<Object> reset_message_trigger = new Trigger<Object>()
+  {
+    @Override
+    public void
+        onTrigger(Observable<? extends Change<? extends Object>> observable,
+            Change<? extends Object> message)
+    {
+      message_impl.resetToDefault(true);
     }
   };
 
@@ -109,7 +116,8 @@ public class RootModel implements HasSerializableState
         @Override
         public ChildModel create(boolean dryrun)
         {
-          ChildModel childModel = new ChildModel(message_impl);
+          ChildModel childModel =
+            new ChildModel(message_impl, reset_message_trigger);
           return childModel;
         }
       });

@@ -1,8 +1,7 @@
-package archorg.arch.gwa.client;
+package archorg.arch.gwa.client.serialization;
 
 import it.celi.research.balrog.beacon.Change;
 import it.celi.research.balrog.beacon.StatelessBeaconObserver;
-import it.celi.research.balrog.event.EventChannel;
 import it.celi.research.balrog.event.Observable;
 
 /**
@@ -34,43 +33,14 @@ public abstract class Trigger<T> extends StatelessBeaconObserver<T>
 
   private static boolean enabled = true;
 
-  private static EventChannel<Void> triggerProcessingComplete =
-    new EventChannel<Void>();
-
-  public static Observable<Void> getEndOfProcess()
-  {
-    return triggerProcessingComplete;
-  }
-
-  private static int stack = 0;
-
-  private static void open()
-  {
-    stack++;
-  }
-
-  private static void close()
-  {
-    stack--;
-    if (stack == 0)
-      triggerProcessingComplete.notify(null);
-  }
-
-  public static boolean isProcessing()
-  {
-    return stack != 0;
-  }
-
   @Override
   public void notice(Observable<? extends Change<? extends T>> observable,
       Change<? extends T> message)
   {
     if (!enabled)
       return;
-    open();
     onTrigger(observable,
       message);
-    close();
   }
 
   public abstract void

@@ -24,7 +24,7 @@ public class StringToFloatConverter extends Converter<String, Float>
   protected String out(Float value)
   {
     if (value == null)
-      return null;
+      return "";
     else
       return format.format(value.doubleValue());
   }
