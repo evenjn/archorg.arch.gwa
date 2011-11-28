@@ -23,7 +23,7 @@ public abstract class StateManager
 
   public StateManager(HasSerializableState root)
   {
-    root = root;
+    this.root = root;
     History.addValueChangeHandler(new ValueChangeHandler<String>()
     {
       public void onValueChange(ValueChangeEvent<String> event)

@@ -19,8 +19,10 @@ public class StateModelImpl
 
   public void dump(HasSerializableState s)
   {
-    s.getSerializableState().dump(this,
-      newID());
+    SerializableState serializableState = s.getSerializableState();
+    String newID = newID();
+    serializableState.dump(this,
+      newID);
   }
 
   protected int sequence = 0;
