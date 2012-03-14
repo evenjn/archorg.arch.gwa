@@ -1,9 +1,8 @@
 package archorg.arch.gwa.client.model;
 
-import it.celi.research.balrog.beacon.Beacon;
-import it.celi.research.balrog.beacon.BeaconReader;
-import it.celi.research.balrog.beacon.BeaconWriter;
-import it.celi.research.balrog.beacon.Change;
+import it.celi.research.balrog.beacon.SimpleBeacon;
+import it.celi.research.balrog.beacon.SimpleBeaconChange;
+import it.celi.research.balrog.beacon.SimpleBeaconReadable;
 import it.celi.research.balrog.event.Observable;
 import archorg.arch.gwa.client.beacon.NullDefaultBeacon;
 import archorg.arch.gwa.client.beacon.SerializableHasSerializableStateBeacon;
@@ -23,7 +22,9 @@ import archorg.arch.gwa.client.serialization.TriggerBeacon;
  * @author evenjn
  * 
  */
-public class RootModel implements HasSerializableState
+public class RootModel
+  implements
+  HasSerializableState
 {
   // output only, transient
   private TriggerBeacon<String> message_impl = new TriggerBeacon<String>(null);
@@ -36,22 +37,22 @@ public class RootModel implements HasSerializableState
   private NullDefaultBeacon<ChildModel> child_impl =
     new NullDefaultBeacon<ChildModel>();
 
-  public BeaconWriter<? super String> getMessageBW()
+  public SimpleBeacon<? super String> getMessageBW()
   {
     return message_impl;
   }
 
-  public BeaconReader<? extends String> getMessageBR()
+  public SimpleBeaconReadable<? extends String> getMessageBR()
   {
     return message_impl;
   }
 
-  public Beacon<Boolean> getHasChildB()
+  public SimpleBeacon<Boolean> getHasChildB()
   {
     return has_child_impl;
   }
 
-  public BeaconReader<? extends ChildModel> getChildBR()
+  public SimpleBeaconReadable<? extends ChildModel> getChildBR()
   {
     return child_impl;
   }
@@ -68,9 +69,9 @@ public class RootModel implements HasSerializableState
   private Trigger<Boolean> create_child_trigger = new Trigger<Boolean>()
   {
     @Override
-    public void
-        onTrigger(Observable<? extends Change<? extends Boolean>> observable,
-            Change<? extends Boolean> message)
+    public void onTrigger(
+      Observable<? extends SimpleBeaconChange<? extends Boolean>> observable,
+      SimpleBeaconChange<? extends Boolean> message)
     {
       if (message.newEqualsOld())
         return;
@@ -88,11 +89,11 @@ public class RootModel implements HasSerializableState
   private Trigger<Object> reset_message_trigger = new Trigger<Object>()
   {
     @Override
-    public void
-        onTrigger(Observable<? extends Change<? extends Object>> observable,
-            Change<? extends Object> message)
+    public void onTrigger(
+      Observable<? extends SimpleBeaconChange<? extends Object>> observable,
+      SimpleBeaconChange<? extends Object> message)
     {
-      message_impl.resetToDefault(true);
+      message_impl.setIfNotEqual(null);
     }
   };
 
@@ -104,7 +105,9 @@ public class RootModel implements HasSerializableState
 
   private SerializableState state;
 
-  private class MySerializableState extends CompositeSerializableState
+  private class MySerializableState
+    extends
+    CompositeSerializableState
   {
     public MySerializableState()
     {
@@ -114,7 +117,8 @@ public class RootModel implements HasSerializableState
         // our problem here is that we can't just create and destroy ChildModels
         // without managing the claudenda
         @Override
-        public ChildModel create(boolean dryrun)
+        public ChildModel create(
+          boolean dryrun)
         {
           ChildModel childModel =
             new ChildModel(message_impl, reset_message_trigger);
@@ -136,8 +140,8 @@ public class RootModel implements HasSerializableState
     @Override
     protected void resetTransient()
     {
-      message_impl.resetToDefault(true);
-      has_child_impl.resetToDefault(true);
+      message_impl.setIfNotEqual(null);
+      has_child_impl.setIfNotEqual(false);
     }
   }
 }

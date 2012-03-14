@@ -5,10 +5,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class StateModelImpl
-  implements StateModel, ReadableStateModel, WritableStateModel
+  implements
+  StateModel,
+  ReadableStateModel,
+  WritableStateModel
 {
-  public void load(HasSerializableState root)
-      throws StateSerializationFormatException
+  public void load(
+    HasSerializableState root) throws StateSerializationFormatException
   {
     root.getSerializableState().validate(this,
       "0");
@@ -17,7 +20,8 @@ public class StateModelImpl
     root.getSerializableState().postLoad();
   }
 
-  public void dump(HasSerializableState s)
+  public void dump(
+    HasSerializableState s)
   {
     SerializableState serializableState = s.getSerializableState();
     String newID = newID();
@@ -33,8 +37,9 @@ public class StateModelImpl
     new HashMap<String, Map<String, String>>();
 
   @Override
-  public boolean specifies(String elementId,
-      String part) throws StateSerializationFormatException
+  public boolean specifies(
+    String elementId,
+    String part) throws StateSerializationFormatException
   {
     Map<String, String> map = map_s.get(elementId);
     if (map == null)
@@ -43,8 +48,9 @@ public class StateModelImpl
   }
 
   @Override
-  public String unfold(String elementId,
-      String part) throws StateSerializationFormatException
+  public String unfold(
+    String elementId,
+    String part) throws StateSerializationFormatException
   {
     Map<String, String> map = map_s.get(elementId);
     if (map == null)
@@ -67,9 +73,10 @@ public class StateModelImpl
   }
 
   @Override
-  public void fold(String id,
-      String part,
-      String value)
+  public void fold(
+    String id,
+    String part,
+    String value)
   {
     Map<String, String> map = map_s.get(id);
     if (map == null)
@@ -77,16 +84,15 @@ public class StateModelImpl
     map.put(part,
       value);
   }
-
-  @Override
-  public String defaultMarker()
-  {
-    return "D";
-  }
-
-  @Override
-  public boolean isDefaultMarker(String id)
-  {
-    return id.equals("D");
-  }
+  // @Override
+  // public String defaultMarker()
+  // {
+  // return "D";
+  // }
+  //
+  // @Override
+  // public boolean isDefaultMarker(String id)
+  // {
+  // return id.equals("D");
+  // }
 }

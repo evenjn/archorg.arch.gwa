@@ -1,10 +1,10 @@
 package archorg.arch.gwa.client.view;
 
-import it.celi.research.balrog.beacon.Beacon;
-import it.celi.research.balrog.beacon.BeaconObserver;
-import it.celi.research.balrog.beacon.BeaconReader;
-import it.celi.research.balrog.beacon.BeaconWriter;
-import it.celi.research.balrog.beacon.Change;
+import it.celi.research.balrog.beacon.SimpleBeacon;
+import it.celi.research.balrog.beacon.SimpleBeaconChange;
+import it.celi.research.balrog.beacon.SimpleBeaconObserver;
+import it.celi.research.balrog.beacon.SimpleBeaconReadable;
+import it.celi.research.balrog.beacon.SimpleBeaconWritable;
 import it.celi.research.balrog.event.Observable;
 import archorg.arch.gwa.client.join.StringToIntegerJoin;
 
@@ -16,7 +16,9 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-public class ChildView extends Composite
+public class ChildView
+  extends
+  Composite
 {
   private VerticalPanel main = new VerticalPanel();
 
@@ -24,9 +26,10 @@ public class ChildView extends Composite
 
   private TextBox box = new TextBox();
 
-  public ChildView(final Beacon<Integer> input,
-      final BeaconWriter<Void> go,
-      final BeaconReader<? extends Iterable<? extends Integer>> results)
+  public ChildView(
+    final SimpleBeacon<Integer> input,
+    final SimpleBeaconWritable<Void> go,
+    final SimpleBeaconReadable<? extends Iterable<? extends Integer>> results)
   {
     StringToIntegerJoin.join(box,
       input);
@@ -34,18 +37,20 @@ public class ChildView extends Composite
     button.addClickHandler(new ClickHandler()
     {
       @Override
-      public void onClick(ClickEvent event)
+      public void onClick(
+        ClickEvent event)
       {
         go.setNevertheless(null);
       }
     });
-    results.subscribe(new BeaconObserver<Iterable<? extends Integer>>()
+    results.subscribe(new SimpleBeaconObserver<Iterable<? extends Integer>>()
     {
       @Override
       public
-          void
-          notice(Observable<? extends Change<? extends Iterable<? extends Integer>>> o,
-              Change<? extends Iterable<? extends Integer>> change)
+        void
+        notice(
+          Observable<? extends SimpleBeaconChange<? extends Iterable<? extends Integer>>> o,
+          SimpleBeaconChange<? extends Iterable<? extends Integer>> change)
       {
         results_panel.clear();
         for (Integer i : change.getNew())

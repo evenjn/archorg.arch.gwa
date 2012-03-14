@@ -1,9 +1,9 @@
 package archorg.arch.gwa.client.view;
 
-import it.celi.research.balrog.beacon.Beacon;
-import it.celi.research.balrog.beacon.BeaconObserver;
-import it.celi.research.balrog.beacon.BeaconReader;
-import it.celi.research.balrog.beacon.Change;
+import it.celi.research.balrog.beacon.SimpleBeacon;
+import it.celi.research.balrog.beacon.SimpleBeaconChange;
+import it.celi.research.balrog.beacon.SimpleBeaconObserver;
+import it.celi.research.balrog.beacon.SimpleBeaconReadable;
 import it.celi.research.balrog.event.Observable;
 import archorg.arch.gwa.client.join.EquiJoin;
 import archorg.arch.gwa.client.model.ChildModel;
@@ -13,7 +13,9 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-public class RootView extends Composite
+public class RootView
+  extends
+  Composite
 {
   private VerticalPanel main = new VerticalPanel();
 
@@ -33,15 +35,17 @@ public class RootView extends Composite
       main.add(errorMessage);
   }
 
-  public RootView(final Beacon<Boolean> has_child,
-      final BeaconReader<? extends ChildModel> child,
-      final BeaconReader<? extends String> error)
+  public RootView(
+    final SimpleBeacon<Boolean> has_child,
+    final SimpleBeaconReadable<? extends ChildModel> child,
+    final SimpleBeaconReadable<? extends String> error)
   {
-    error.subscribe(new BeaconObserver<String>()
+    error.subscribe(new SimpleBeaconObserver<String>()
     {
       @Override
-      public void notice(Observable<? extends Change<? extends String>> o,
-          Change<? extends String> change)
+      public void notice(
+        Observable<? extends SimpleBeaconChange<? extends String>> o,
+        SimpleBeaconChange<? extends String> change)
       {
         if (change.newEqualsOld())
           return;
@@ -57,11 +61,12 @@ public class RootView extends Composite
         redraw();
       }
     });
-    child.subscribe(new BeaconObserver<ChildModel>()
+    child.subscribe(new SimpleBeaconObserver<ChildModel>()
     {
       @Override
-      public void notice(Observable<? extends Change<? extends ChildModel>> o,
-          Change<? extends ChildModel> change)
+      public void notice(
+        Observable<? extends SimpleBeaconChange<? extends ChildModel>> o,
+        SimpleBeaconChange<? extends ChildModel> change)
       {
         if (change.newEqualsOld())
           return;
@@ -77,8 +82,10 @@ public class RootView extends Composite
         redraw();
       }
     });
-    EquiJoin.join(childbox,
-      has_child);
+    com.google.gwt.user.client.ui.HasValue<Boolean> hvb = childbox;
+    it.celi.research.balrog.beacon.SimpleBeacon<Boolean> bea = has_child;
+    EquiJoin.join(hvb,
+      bea);
     if (child.isNotNull())
     {
       ChildModel model = child.get();

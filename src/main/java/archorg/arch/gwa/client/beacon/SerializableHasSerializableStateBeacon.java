@@ -1,6 +1,6 @@
 package archorg.arch.gwa.client.beacon;
 
-import it.celi.research.balrog.beacon.Beacon;
+import it.celi.research.balrog.beacon.SimpleBeacon;
 import archorg.arch.gwa.client.serialization.HasSerializableState;
 import archorg.arch.gwa.client.serialization.ReadableStateModel;
 import archorg.arch.gwa.client.serialization.SerializableState;
@@ -15,21 +15,24 @@ import archorg.arch.gwa.client.serialization.WritableStateModel;
  * @param <T>
  */
 public abstract class SerializableHasSerializableStateBeacon<T extends HasSerializableState>
-  implements SerializableState
+  implements
+  SerializableState
 {
   private final String beaconID;
 
-  private final Beacon<T> beacon;
+  private final SimpleBeacon<T> beacon;
 
-  public abstract T create(boolean for_validation_only);
+  public abstract T create(
+    boolean for_validation_only);
 
-  public Beacon<T> getBeacon()
+  public SimpleBeacon<T> getBeacon()
   {
     return beacon;
   }
 
-  public SerializableHasSerializableStateBeacon(String beaconID,
-      NullDefaultBeacon<T> beacon)
+  public SerializableHasSerializableStateBeacon(
+    String beaconID,
+    NullDefaultBeacon<T> beacon)
   {
     this.beaconID = beaconID;
     this.beacon = beacon;
@@ -37,26 +40,27 @@ public abstract class SerializableHasSerializableStateBeacon<T extends HasSerial
 
   public boolean isAtDefault()
   {
-    if (!beacon.isAtDefault())
+    if (!beacon.isNull())
       return false;
     return true;
   }
 
   public void resetToDefault()
   {
-    beacon.resetToDefault(true);
+    beacon.setIfNotEqual(null);
   }
 
   @Override
-  public void load(ReadableStateModel s,
-      String id) throws StateSerializationFormatException
+  public void load(
+    ReadableStateModel s,
+    String id) throws StateSerializationFormatException
   {
     if (!s.specifies(id,
       beaconID))
     {
       // if no information is provided, reset it to the default state
       // first, determine if the default is to be null
-      beacon.resetToDefault(true);
+      beacon.setIfNotEqual(null);
       // and then if it is not null, ask the object to reset itself.
       // if (beacon.isNotNull())
       // beacon.get().getSerializableState().resetToDefault();
@@ -65,43 +69,39 @@ public abstract class SerializableHasSerializableStateBeacon<T extends HasSerial
     String string = s.unfold(id,
       beaconID);
     beacon.setIfNotEqual(create(false));
-    if (s.isDefaultMarker(string))
-      beacon.get().getSerializableState().resetToDefault();
-    else
-      beacon.get().getSerializableState().load(s,
-        string);
+    beacon.get().getSerializableState().load(s,
+      string);
   }
 
   @Override
-  public void validate(ReadableStateModel s,
-      String id) throws StateSerializationFormatException
+  public void validate(
+    ReadableStateModel s,
+    String id) throws StateSerializationFormatException
   {
     if (!s.specifies(id,
       beaconID))
       return;
     String string = s.unfold(id,
       beaconID);
-    if (!s.isDefaultMarker(string))
-      create(true).getSerializableState().validate(s,
-        string);
   }
 
   @Override
-  public void dump(WritableStateModel s,
-      String id)
+  public void dump(
+    WritableStateModel s,
+    String id)
   {
     // default can only be null
     // if default, this method will never be called
-    String vid = s.defaultMarker();
+    // String vid = s.defaultMarker();
     if (!beacon.get().getSerializableState().isAtDefault())
     {
-      vid = s.newID();
+      String vid = s.newID();
       beacon.get().getSerializableState().dump(s,
         vid);
     }
-    s.fold(id,
-      beaconID,
-      vid);
+    // s.fold(id,
+    // beaconID,
+    // vid);
   }
 
   @Override

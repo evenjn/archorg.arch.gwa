@@ -1,7 +1,7 @@
 package archorg.arch.gwa.client.serialization;
 
-import it.celi.research.balrog.beacon.BeaconImpl;
-import it.celi.research.balrog.beacon.Change;
+import it.celi.research.balrog.beacon.SimpleBeaconChange;
+import it.celi.research.balrog.beacon.SimpleBeaconImpl;
 
 /**
  * A Beacon with a static Observable that notifies when all TriggerBeacons have
@@ -11,11 +11,14 @@ import it.celi.research.balrog.beacon.Change;
  * 
  * @param <T>
  */
-public class TriggerBeacon<T> extends BeaconImpl<T>
+public class TriggerBeacon<T>
+  extends
+  SimpleBeaconImpl<T>
 {
   private static StateManager statemanager;
 
-  public static void setStateManager(StateManager sm)
+  public static void setStateManager(
+    StateManager sm)
   {
     statemanager = sm;
   }
@@ -24,7 +27,8 @@ public class TriggerBeacon<T> extends BeaconImpl<T>
 
   protected boolean saveOnEvent = false;
 
-  public void setSaveOnEvent(boolean value)
+  public void setSaveOnEvent(
+    boolean value)
   {
     saveOnEvent = value;
   }
@@ -32,12 +36,14 @@ public class TriggerBeacon<T> extends BeaconImpl<T>
   public TriggerBeacon()
   {};
 
-  public TriggerBeacon(T defaultvalue)
+  public TriggerBeacon(
+    T defaultvalue)
   {
     super(defaultvalue);
   }
 
-  public void notify(Change<? extends T> change)
+  public void notify(
+    SimpleBeaconChange<? extends T> change)
   {
     stack++;
     super.notify(change);

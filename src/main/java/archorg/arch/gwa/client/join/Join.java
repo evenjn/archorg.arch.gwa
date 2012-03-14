@@ -1,8 +1,8 @@
 package archorg.arch.gwa.client.join;
 
-import it.celi.research.balrog.beacon.Beacon;
-import it.celi.research.balrog.beacon.BeaconObserver;
-import it.celi.research.balrog.beacon.Change;
+import it.celi.research.balrog.beacon.SimpleBeacon;
+import it.celi.research.balrog.beacon.SimpleBeaconChange;
+import it.celi.research.balrog.beacon.SimpleBeaconObserver;
 import it.celi.research.balrog.event.Observable;
 
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -13,21 +13,24 @@ public class Join<X, Y>
 {
   private boolean ignore = false;
 
-  public static <X, Y> void join(final Converter<X, Y> converter,
-      final HasValue<X> widget,
-      final Beacon<Y> beacon)
+  public static <X, Y> void join(
+    final Converter<X, Y> converter,
+    final HasValue<X> widget,
+    final SimpleBeacon<Y> beacon)
   {
     new Join<X, Y>(converter, widget, beacon);
   }
 
-  protected Join(final Converter<X, Y> converter,
-      final HasValue<X> widget,
-      final Beacon<Y> beacon)
+  protected Join(
+    final Converter<X, Y> converter,
+    final HasValue<X> widget,
+    final SimpleBeacon<Y> beacon)
   {
     widget.addValueChangeHandler(new ValueChangeHandler<X>()
     {
       @Override
-      public void onValueChange(ValueChangeEvent<X> event)
+      public void onValueChange(
+        ValueChangeEvent<X> event)
       {
         if (ignore)
           return;
@@ -36,13 +39,14 @@ public class Join<X, Y>
         ignore = false;
       }
     });
-    beacon.subscribe(new BeaconObserver<Y>()
+    beacon.subscribe(new SimpleBeaconObserver<Y>()
     {
       @Override
-      public void notice(Observable<? extends Change<? extends Y>> o,
-          Change<? extends Y> change)
+      public void notice(
+        Observable<? extends SimpleBeaconChange<? extends Y>> observable,
+        SimpleBeaconChange<? extends Y> message)
       {
-        widget.setValue(converter.out(change.getNew()));
+        widget.setValue(converter.out(message.getNew()));
       }
     });
     widget.setValue(converter.out(beacon.get()));

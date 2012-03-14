@@ -1,9 +1,8 @@
 package archorg.arch.gwa.client.model;
 
-import it.celi.research.balrog.beacon.Beacon;
-import it.celi.research.balrog.beacon.BeaconReader;
-import it.celi.research.balrog.beacon.BeaconWriter;
-import it.celi.research.balrog.beacon.Change;
+import it.celi.research.balrog.beacon.SimpleBeacon;
+import it.celi.research.balrog.beacon.SimpleBeaconChange;
+import it.celi.research.balrog.beacon.SimpleBeaconReadable;
 import it.celi.research.balrog.event.Observable;
 
 import java.util.ArrayList;
@@ -21,21 +20,24 @@ import archorg.arch.gwa.shared.Output;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public class ChildModel implements HasSerializableState
+public class ChildModel
+  implements
+  HasSerializableState
 {
-  private final BeaconWriter<String> message_impl;
+  private final SimpleBeacon<String> message_impl;
 
-  public ChildModel(BeaconWriter<String> message_impl,
-      Trigger<Object> reset_message)
+  public ChildModel(
+    SimpleBeacon<String> message_impl,
+    Trigger<Object> reset_message)
   {
     this.message_impl = message_impl;
     action_impl.setSaveOnEvent(true);
     action_impl.subscribe(new Trigger<Void>()
     {
       @Override
-      public void
-          onTrigger(Observable<? extends Change<? extends Void>> observable,
-              Change<? extends Void> message)
+      public void onTrigger(
+        Observable<? extends SimpleBeaconChange<? extends Void>> observable,
+        SimpleBeaconChange<? extends Void> message)
       {
         serve();
       }
@@ -45,37 +47,39 @@ public class ChildModel implements HasSerializableState
 
   private TriggerBeacon<Void> action_impl = new TriggerBeacon<Void>(null);
 
-  public BeaconWriter<Void> getActionW()
+  public SimpleBeacon<Void> getActionW()
   {
     return action_impl;
   }
 
   private TriggerBeacon<Integer> input_impl = new TriggerBeacon<Integer>(1);
 
-  public Beacon<Integer> input = input_impl;
+  public SimpleBeacon<Integer> input = input_impl;
 
   private TriggerBeacon<ArrayList<Integer>> results_impl =
     new TriggerBeacon<ArrayList<Integer>>();
 
-  public BeaconReader<? extends Iterable<? extends Integer>> results =
+  public SimpleBeaconReadable<? extends Iterable<? extends Integer>> results =
     results_impl;
 
   private void serve()
   {
     Input inp = new Input();
-    message_impl.resetToDefault();
+    message_impl.setIfNotEqual(null);
     inp.input = input_impl.get();
     Client.stub.serve(inp,
       new AsyncCallback<Output>()
       {
         @Override
-        public void onFailure(Throwable caught)
+        public void onFailure(
+          Throwable caught)
         {
           message_impl.setIfNotEqual(caught.getClass().getName());
         }
 
         @Override
-        public void onSuccess(Output result)
+        public void onSuccess(
+          Output result)
         {
           if (result.errorOccurred)
             message_impl.setIfNotEqual(result.errorMessage);
@@ -93,38 +97,42 @@ public class ChildModel implements HasSerializableState
 
   private SerializableState state = new MySerializableState();
 
-  private class MySerializableState implements SerializableState
+  private class MySerializableState
+    implements
+    SerializableState
   {
     @Override
-    public void dump(WritableStateModel s,
-        String id)
+    public void dump(
+      WritableStateModel s,
+      String id)
     {
-      if (!input.isAtDefault())
+      if (!input.valueEquals(1))
         s.fold(id,
           "input",
           input.get().toString());
     }
 
-    @Override
-    public void resetToDefault()
-    {
-      input_impl.resetToDefault(true);
-    }
-
+    // @Override
+    // public void resetToDefault()
+    // {
+    // input_impl.setIfNotEqual(1);
+    // }
+    //
     @Override
     public boolean isAtDefault()
     {
-      return input_impl.isAtDefault();
+      return input_impl.valueEquals(1);
     }
 
     @Override
-    public void load(ReadableStateModel s,
-        String id) throws StateSerializationFormatException
+    public void load(
+      ReadableStateModel s,
+      String id) throws StateSerializationFormatException
     {
       if (!s.specifies(id,
         "input"))
       {
-        input_impl.resetToDefault(true);
+        input_impl.setIfNotEqual(1);
         return;
       }
       String du = s.unfold(id,
@@ -142,8 +150,9 @@ public class ChildModel implements HasSerializableState
     }
 
     @Override
-    public void validate(ReadableStateModel s,
-        String id) throws StateSerializationFormatException
+    public void validate(
+      ReadableStateModel s,
+      String id) throws StateSerializationFormatException
     {
       if (!s.specifies(id,
         "input"))

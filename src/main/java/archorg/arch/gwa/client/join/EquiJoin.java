@@ -1,30 +1,27 @@
 package archorg.arch.gwa.client.join;
 
-import it.celi.research.balrog.beacon.Beacon;
+import it.celi.research.balrog.beacon.SimpleBeacon;
 
 import com.google.gwt.user.client.ui.HasValue;
 
-public class EquiJoin<T> extends Join<T, T>
+public class EquiJoin
 {
-  public static <T> void join(final HasValue<T> widget,
-      final Beacon<T> beacon)
+  public static <X> void join(
+    final HasValue<X> widget,
+    final SimpleBeacon<X> beacon)
   {
-    new EquiJoin<T>(widget, beacon);
-  }
-
-  protected EquiJoin(final HasValue<T> widget,
-      final Beacon<T> beacon)
-  {
-    super(new Converter<T, T>()
+    new Join<X, X>(new Converter<X, X>()
     {
       @Override
-      protected T in(T value)
+      protected X in(
+        X value)
       {
         return value;
       }
 
       @Override
-      protected T out(T value)
+      protected X out(
+        X value)
       {
         return value;
       }

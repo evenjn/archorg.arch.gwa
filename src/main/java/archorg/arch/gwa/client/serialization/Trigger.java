@@ -1,7 +1,7 @@
 package archorg.arch.gwa.client.serialization;
 
-import it.celi.research.balrog.beacon.Change;
-import it.celi.research.balrog.beacon.StatelessBeaconObserver;
+import it.celi.research.balrog.beacon.SimpleBeaconChange;
+import it.celi.research.balrog.beacon.SimpleBeaconObserver;
 import it.celi.research.balrog.event.Observable;
 
 /**
@@ -24,9 +24,12 @@ import it.celi.research.balrog.event.Observable;
  * 
  * @param <T>
  */
-public abstract class Trigger<T> extends StatelessBeaconObserver<T>
+public abstract class Trigger<T>
+  implements
+  SimpleBeaconObserver<T>
 {
-  public static void setEnabled(boolean value)
+  public static void setEnabled(
+    boolean value)
   {
     enabled = value;
   }
@@ -34,8 +37,9 @@ public abstract class Trigger<T> extends StatelessBeaconObserver<T>
   private static boolean enabled = true;
 
   @Override
-  public void notice(Observable<? extends Change<? extends T>> observable,
-      Change<? extends T> message)
+  public void notice(
+    Observable<? extends SimpleBeaconChange<? extends T>> observable,
+    SimpleBeaconChange<? extends T> message)
   {
     if (!enabled)
       return;
@@ -43,7 +47,7 @@ public abstract class Trigger<T> extends StatelessBeaconObserver<T>
       message);
   }
 
-  public abstract void
-      onTrigger(Observable<? extends Change<? extends T>> observable,
-          Change<? extends T> message);
+  public abstract void onTrigger(
+    Observable<? extends SimpleBeaconChange<? extends T>> observable,
+    SimpleBeaconChange<? extends T> message);
 }
