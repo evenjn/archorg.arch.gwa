@@ -37,14 +37,6 @@ public abstract class CompositeStateLoader
   }
 
   @Override
-  public void resetToDefault()
-  {
-    for (HasStateLoader bs : ios)
-      bs.getStateLoader().resetToDefault();
-    resetTransient();
-  }
-
-  @Override
   public void postLoad()
   {
     for (HasStateLoader bs : ios)

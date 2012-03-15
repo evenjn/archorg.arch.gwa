@@ -20,9 +20,6 @@ public class URIFragmentStateModel
     String s)
     throws StateSerializationFormatException
   {
-    if (!s.startsWith("!"))
-      // this is a regular link
-      return;
     if (s.length() == 1)
       return;
     // throw new StateSerializationFormatException("default state");

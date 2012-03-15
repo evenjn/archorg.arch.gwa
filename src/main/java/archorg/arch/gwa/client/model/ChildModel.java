@@ -180,12 +180,6 @@ public class ChildModel
       {
         serve();
       }
-
-      @Override
-      public void resetToDefault()
-      {
-        input_impl.setIfNotEqual(1);
-      }
     };
   }
 }

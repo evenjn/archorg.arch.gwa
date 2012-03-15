@@ -74,12 +74,6 @@ public abstract class CICIBeacon<T extends HasBoth>
       }
 
       @Override
-      public void resetToDefault()
-      {
-        beacon.setIfNotEqual(null);
-      }
-
-      @Override
       public void postLoad()
       {
         if (beacon.isNotNull())

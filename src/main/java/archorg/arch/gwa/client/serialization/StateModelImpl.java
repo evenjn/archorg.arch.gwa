@@ -12,11 +12,6 @@ public class StateModelImpl
   public void load(
     HasStateLoader root) throws StateSerializationFormatException
   {
-    if (map_s.isEmpty())
-    {
-      root.getStateLoader().resetToDefault();
-      return;
-    }
     root.getStateLoader().validate(this,
       "0");
     root.getStateLoader().load(this,

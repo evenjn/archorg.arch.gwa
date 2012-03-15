@@ -62,12 +62,6 @@ public class CINonNullBooleanBeacon
     return new StateLoader()
     {
       @Override
-      public void resetToDefault()
-      {
-        beacon.setIfNotEqual(defaultt);
-      }
-
-      @Override
       public void load(
         ReadableStateModel s,
         String id) throws StateSerializationFormatException

@@ -54,9 +54,12 @@ public class StateManager
   private void load(
     String historyToken)
   {
+    String encoded = URL.decodeQueryString(historyToken);
+    if (!encoded.startsWith("!"))
+      // this is a regular link
+      return;
     loading = true;
     Trigger.setEnabled(false);
-    String encoded = URL.decodeQueryString(historyToken);
     try
     {
       factory.load(root,
@@ -68,8 +71,7 @@ public class StateManager
       String s = e.getMessage();
       if (s == null)
         s = "-";
-      message_beacon
-        .notify("The URI you attempted to load is not valid. Error: " + s);
+      message_beacon.notify("The URI you attempted to load is not valid.");
     }
     finally
     {
