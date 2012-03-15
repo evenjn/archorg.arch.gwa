@@ -9,18 +9,23 @@ import archorg.arch.gwa.client.serialization.StateSerializationFormatException;
 
 import com.google.gwt.http.client.URL;
 
-public class URIFragmentStateModel extends StateModelImpl
+public class URIFragmentStateModel
+  extends
+  StateModelImpl
 {
   public URIFragmentStateModel()
   {}
 
-  public URIFragmentStateModel(String s)
-      throws StateSerializationFormatException
+  public URIFragmentStateModel(
+    String s)
+    throws StateSerializationFormatException
   {
     if (!s.startsWith("!"))
-      throw new StateSerializationFormatException("empty string");
+      // this is a regular link
+      return;
     if (s.length() == 1)
-      throw new StateSerializationFormatException("default state");
+      return;
+    // throw new StateSerializationFormatException("default state");
     if (s.length() < 2)
       throw new StateSerializationFormatException("too short");
     s = s.substring(1);
@@ -127,8 +132,8 @@ public class URIFragmentStateModel extends StateModelImpl
 
   private final static String empty_symbol = "@";
 
-  private static String unescape(String s)
-      throws StateSerializationFormatException
+  private static String unescape(
+    String s) throws StateSerializationFormatException
   {
     if (s.equals(null_symbol))
       return null;
@@ -139,7 +144,8 @@ public class URIFragmentStateModel extends StateModelImpl
     return URL.decodeQueryString(s);
   }
 
-  private static String escape(String s)
+  private static String escape(
+    String s)
   {
     if (s == null)
       return null_symbol;
