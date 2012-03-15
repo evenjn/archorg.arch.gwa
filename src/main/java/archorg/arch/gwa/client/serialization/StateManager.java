@@ -11,7 +11,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.History;
 
-public abstract class StateManager
+public class StateManager
 {
   private HasBoth root;
 
@@ -19,13 +19,17 @@ public abstract class StateManager
 
   private EventChannel<String> message_beacon = new EventChannel<String>();
 
+  private final StateModelFactory factory;
+
   public Observable<String> getMessage()
   {
     return message_beacon;
   }
 
-  public StateManager()
+  public StateManager(
+    StateModelFactory factory)
   {
+    this.factory = factory;
     History.addValueChangeHandler(new ValueChangeHandler<String>()
     {
       public void onValueChange(
@@ -52,11 +56,11 @@ public abstract class StateManager
   {
     loading = true;
     Trigger.setEnabled(false);
-    String decode = URL.decodeQueryString(historyToken);
+    String encoded = URL.decodeQueryString(historyToken);
     try
     {
-      StateModel load = create(decode);
-      load.load(root);
+      factory.load(root,
+        encoded);
       environment_change.notify(null);
     }
     catch (StateSerializationFormatException e)
@@ -64,7 +68,8 @@ public abstract class StateManager
       String s = e.getMessage();
       if (s == null)
         s = "-";
-      message_beacon.notify("The URI you attempted to load is not valid. ");
+      message_beacon
+        .notify("The URI you attempted to load is not valid. Error: " + s);
     }
     finally
     {
@@ -98,12 +103,10 @@ public abstract class StateManager
   public String serialize(
     StatefulAction a)
   {
-    StateModel si = create();
     if (root == null)
       throw new IllegalStateException("Root has not been set yet.");
-    si.dump(root,
+    return factory.dump(root,
       a);
-    return si.toString();
   }
 
   public void store(
@@ -114,11 +117,6 @@ public abstract class StateManager
     History.newItem(historyToken,
       true);
   }
-
-  protected abstract StateModel create();
-
-  protected abstract StateModel create(
-    String decode) throws StateSerializationFormatException;
 
   public EventChannel<Void> getEnvironmentChangeChannel()
   {

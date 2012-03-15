@@ -3,8 +3,9 @@ package archorg.arch.gwa.client;
 import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
 import archorg.arch.gwa.client.model.RootModel;
+import archorg.arch.gwa.client.serialization.StateManager;
 import archorg.arch.gwa.client.serialization.StatefulActionImpl;
-import archorg.arch.gwa.client.uristate.URIFragmentStateManager;
+import archorg.arch.gwa.client.uristate.URIStateModelFactory;
 import archorg.arch.gwa.client.view.RootView;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -21,7 +22,7 @@ public class Client
   public void onModuleLoad()
   {
     // create the URI state manager. it loads the application state from the URI
-    URIFragmentStateManager sm = new URIFragmentStateManager();
+    StateManager sm = new StateManager(new URIStateModelFactory());
     // // TriggerBeacons can be configured to trigger a dump of the current
     // state
     StatefulActionImpl.setStateManager(sm);
