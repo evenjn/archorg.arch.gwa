@@ -57,19 +57,13 @@ public abstract class CompositeStateLoader
     StatefulAction a)
   {
     String id = s.getID();
-    boolean isdefault = true;
     for (BeaconHasBoth bs : ios)
     {
-      boolean not_empty = bs.getSerializableState().dump(s,
+      bs.getSerializableState().dump(s,
         id,
         a);
-      if (not_empty)
-        isdefault = false;
     }
-    if (isdefault)
-      return s.defaultMarker();
-    else
-      return id;
+    return id;
   }
 
   protected abstract void resetTransient();

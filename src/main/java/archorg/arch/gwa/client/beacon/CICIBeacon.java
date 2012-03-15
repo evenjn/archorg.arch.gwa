@@ -69,11 +69,8 @@ public abstract class CICIBeacon<T extends HasBoth>
         String string = s.unfold(id,
           beaconID);
         beacon.setIfNotEqual(create(true));
-        if (s.isDefaultMarker(string))
-          beacon.get().getStateLoader().resetToDefault();
-        else
-          beacon.get().getStateLoader().load(s,
-            string);
+        beacon.get().getStateLoader().load(s,
+          string);
       }
 
       @Override
@@ -108,11 +105,8 @@ public abstract class CICIBeacon<T extends HasBoth>
         String string = s.unfold(id,
           beaconID);
         beacon.setIfNotEqual(create(false));
-        if (s.isDefaultMarker(string))
-          beacon.get().getStateLoader().resetToDefault();
-        else
-          beacon.get().getStateLoader().load(s,
-            string);
+        beacon.get().getStateLoader().load(s,
+          string);
       }
     };
   }
@@ -123,19 +117,18 @@ public abstract class CICIBeacon<T extends HasBoth>
     return new SerializableBeaconState()
     {
       @Override
-      public boolean dump(
+      public void dump(
         WritableStateModel s,
         String container_id,
         StatefulAction a)
       {
         if (beacon.isNull())
-          return false;
+          return;
         String vid = beacon.get().getSerializableState().dump(s,
           a);
         s.fold(container_id,
           beaconID,
           vid);
-        return true;
       }
     };
   }

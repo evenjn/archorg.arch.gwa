@@ -38,7 +38,7 @@ public class CINonNullBooleanBeacon
   {
     return new SerializableBeaconState()
     {
-      public boolean dump(
+      public void dump(
         WritableStateModel s,
         String container_id,
         StatefulAction a)
@@ -51,9 +51,7 @@ public class CINonNullBooleanBeacon
           s.fold(container_id,
             beaconID,
             beacon.get().toString());
-          return true;
         }
-        return false;
       }
     };
   }

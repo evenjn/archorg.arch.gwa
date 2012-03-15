@@ -45,11 +45,9 @@ public class StateModelImpl
     String elementId,
     String part) throws StateSerializationFormatException
   {
-    if (elementId.equals(defaultMarker()))
-      return false;
     Map<String, String> map = map_s.get(elementId);
     if (map == null)
-      throw new IllegalArgumentException("Element ID not valid.");
+      return false;
     return map.containsKey(part);
   }
 
@@ -88,19 +86,6 @@ public class StateModelImpl
       throw new IllegalArgumentException("Element ID not valid.");
     map.put(part,
       value);
-  }
-
-  @Override
-  public String defaultMarker()
-  {
-    return "D";
-  }
-
-  @Override
-  public boolean isDefaultMarker(
-    String id)
-  {
-    return id.equals("D");
   }
 
   @Override
