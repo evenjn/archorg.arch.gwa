@@ -57,6 +57,7 @@ public abstract class StateManager
     {
       StateModel load = create(decode);
       load.load(root);
+      environment_change.notify(null);
     }
     catch (StateSerializationFormatException e)
     {

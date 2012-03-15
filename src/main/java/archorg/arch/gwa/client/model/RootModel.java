@@ -79,16 +79,16 @@ public class RootModel
     has_child_impl.subscribe(reset_message_trigger);
     child_impl.subscribe(reset_message_trigger);
     has_child_impl.subscribe(envco);
-    // has_child_impl.subscribe(new Observer<Object>()
-    // {
-    // @Override
-    // public void notice(
-    // Observable<? extends Object> observable,
-    // Object message)
-    // {
-    // child_action.execute();
-    // }
-    // });
+    has_child_impl.subscribe(new Observer<Object>()
+    {
+      @Override
+      public void notice(
+        Observable<? extends Object> observable,
+        Object message)
+      {
+        child_action.execute();
+      }
+    });
     // has_child_impl.setSaveOnEvent(true);// omg!
   }
 
@@ -147,7 +147,6 @@ public class RootModel
       }
       ChildModel childModel =
         new ChildModel(envchan, envco, message_impl, reset_message_trigger);
-      envchan.notify(null);
       return childModel;
     }
   };
