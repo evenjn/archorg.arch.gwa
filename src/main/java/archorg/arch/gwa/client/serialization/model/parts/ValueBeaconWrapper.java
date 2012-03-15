@@ -1,22 +1,14 @@
-package archorg.arch.gwa.client.beacon;
+package archorg.arch.gwa.client.serialization.model.parts;
 
 import it.celi.research.balrog.beacon.SimpleBeacon;
 import archorg.arch.gwa.client.serialization.StatefulAction;
 import archorg.arch.gwa.client.serialization.model.BeaconStateEngine;
 import archorg.arch.gwa.client.serialization.model.HasBeaconStateEngine;
-import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
 import archorg.arch.gwa.client.serialization.model.ReadableStateModel;
 import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
 import archorg.arch.gwa.client.serialization.model.WritableStateModel;
 
-/**
- * The default can only be null
- * 
- * @author evenjn
- * 
- * @param <T>
- */
-public abstract class CICIBeacon<T extends HasObjectStateEngine>
+public abstract class ValueBeaconWrapper<T>
   implements
   HasBeaconStateEngine
 {
@@ -24,16 +16,29 @@ public abstract class CICIBeacon<T extends HasObjectStateEngine>
 
   private final SimpleBeacon<T> beacon;
 
-  public abstract T create(
-    boolean for_validation_only);
+  private final T default_value;
 
-  public CICIBeacon(
+  public ValueBeaconWrapper(
     String beaconID,
-    SimpleBeacon<T> beacon)
+    SimpleBeacon<T> beacon,
+    T default_value)
   {
     this.beaconID = beaconID;
     this.beacon = beacon;
+    this.default_value = default_value;
   }
+
+  protected abstract String encode(
+    T value);
+
+  protected abstract T decode(
+    String value) throws StateSerializationFormatException;
+
+  protected abstract T transform(
+    T value,
+    StatefulAction a);
+
+  protected abstract void postLoad();
 
   private final BeaconStateEngine engine = new BeaconStateEngine()
   {
@@ -43,10 +48,14 @@ public abstract class CICIBeacon<T extends HasObjectStateEngine>
       String container_id,
       StatefulAction a)
     {
-      if (beacon.isNull())
-        return;
-      String vid = beacon.get().getObjectStateEngine().dump(s,
+      T transformed = transform(beacon.get(),
         a);
+      if (transformed == null && default_value == null)
+        return;
+      if (transformed != null && default_value != null
+          && transformed.equals(default_value))
+        return;
+      String vid = encode(transformed);
       s.fold(container_id,
         beaconID,
         vid);
@@ -55,8 +64,7 @@ public abstract class CICIBeacon<T extends HasObjectStateEngine>
     @Override
     public void postLoad()
     {
-      if (beacon.isNotNull())
-        beacon.get().getObjectStateEngine().postLoad();
+      ValueBeaconWrapper.this.postLoad();
     }
 
     @Override
@@ -68,21 +76,13 @@ public abstract class CICIBeacon<T extends HasObjectStateEngine>
       if (!s.specifies(id,
         beaconID))
       {
-        // if no information is provided, reset it to the default state
-        // first, determine if the default is to be null
         if (!validate)
-          beacon.setIfNotEqual(null);
-        // and then if it is not null, ask the object to reset itself.
-        // if (beacon.isNotNull())
-        // beacon.get().getSerializableState().resetToDefault();
+          beacon.setIfNotEqual(default_value);
         return;
       }
       String string = s.unfold(id,
         beaconID);
-      beacon.setIfNotEqual(create(validate));
-      beacon.get().getObjectStateEngine().load(validate,
-        s,
-        string);
+      beacon.setIfNotEqual(decode(string));
     }
   };
 

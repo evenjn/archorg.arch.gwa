@@ -7,12 +7,12 @@ import it.celi.research.balrog.beacon.SimpleBeaconReadable;
 import it.celi.research.balrog.event.EventChannel;
 import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
-import archorg.arch.gwa.client.beacon.CICIBeacon;
 import archorg.arch.gwa.client.serialization.StatefulActionImpl;
 import archorg.arch.gwa.client.serialization.Trigger;
-import archorg.arch.gwa.client.serialization.model.CompositeStateLoader;
 import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
 import archorg.arch.gwa.client.serialization.model.ObjectStateEngine;
+import archorg.arch.gwa.client.serialization.model.parts.BeaconStateEngineAggregation;
+import archorg.arch.gwa.client.serialization.model.parts.ObjectBeaconWrapper;
 
 /**
  * Because View objects are connected to Model objects with a double link (via a
@@ -86,7 +86,6 @@ public class RootModel
         child_action.execute();
       }
     });
-    // has_child_impl.setSaveOnEvent(true);// omg!
   }
 
   private Trigger<Boolean> create_child_trigger = new Trigger<Boolean>()
@@ -122,38 +121,25 @@ public class RootModel
     }
   };
 
-  private final CICIBeacon<ChildModel> ccc = new CICIBeacon<ChildModel>(
-    "child", child_impl)
-  {
-    // our problem here is that we can't just create and destroy ChildModels
-    // without managing the claudenda
-    @Override
-    public ChildModel create(
-      boolean dryrun)
+  private final ObjectStateEngine engine = new BeaconStateEngineAggregation(
+    new ObjectBeaconWrapper<ChildModel>("child", child_impl)
     {
-      if (dryrun)
+      @Override
+      public ChildModel create(
+        boolean dryrun)
       {
-        ChildModel childModel = new ChildModel(null, null, message_impl, null);
+        if (dryrun)
+        {
+          ChildModel childModel =
+            new ChildModel(null, null, message_impl, null);
+          return childModel;
+        }
+        ChildModel childModel =
+          new ChildModel(envchan, envco, message_impl, reset_message_trigger);
         return childModel;
       }
-      ChildModel childModel =
-        new ChildModel(envchan, envco, message_impl, reset_message_trigger);
-      return childModel;
-    }
-  };
-
-  private MyBoon engine = new MyBoon();
-
-  private class MyBoon
-    extends
-    CompositeStateLoader
+    })
   {
-    public MyBoon()
-    {
-      compose(ccc);
-      // compose(new CINonNullBooleanBeacon("hc", has_child_impl, false));
-    }
-
     @Override
     public void postLoad()
     {
@@ -162,15 +148,9 @@ public class RootModel
         has_child_impl.setIfNotEqual(true);
       else
         has_child_impl.setIfNotEqual(false);
-    }
-
-    @Override
-    protected void resetTransient()
-    {
       message_impl.setIfNotEqual(null);
-      // has_child_impl.setIfNotEqual(false);
     }
-  }
+  };
 
   @Override
   public ObjectStateEngine getObjectStateEngine()

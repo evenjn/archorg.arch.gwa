@@ -1,20 +1,26 @@
-package archorg.arch.gwa.client.serialization.model;
+package archorg.arch.gwa.client.serialization.model.parts;
 
 import java.util.ArrayList;
 
 import archorg.arch.gwa.client.serialization.StatefulAction;
+import archorg.arch.gwa.client.serialization.model.HasBeaconStateEngine;
+import archorg.arch.gwa.client.serialization.model.ObjectStateEngine;
+import archorg.arch.gwa.client.serialization.model.ReadableStateModel;
+import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
+import archorg.arch.gwa.client.serialization.model.WritableStateModel;
 
-public abstract class CompositeStateLoader
+public class BeaconStateEngineAggregation
   implements
   ObjectStateEngine
 {
   private ArrayList<HasBeaconStateEngine> ios =
     new ArrayList<HasBeaconStateEngine>();
 
-  public void compose(
-    HasBeaconStateEngine beacon)
+  public BeaconStateEngineAggregation(
+    HasBeaconStateEngine... beacons)
   {
-    ios.add(beacon);
+    for (HasBeaconStateEngine beacon : beacons)
+      ios.add(beacon);
   }
 
   @Override
@@ -27,8 +33,6 @@ public abstract class CompositeStateLoader
       bs.getBeaconStateEngine().load(validate,
         s,
         elementID);
-    if (!validate)
-      resetTransient();
   }
 
   @Override
@@ -52,6 +56,4 @@ public abstract class CompositeStateLoader
     }
     return id;
   }
-
-  protected abstract void resetTransient();
 }

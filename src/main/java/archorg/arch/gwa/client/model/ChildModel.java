@@ -9,14 +9,13 @@ import it.celi.research.balrog.event.Observer;
 import java.util.ArrayList;
 
 import archorg.arch.gwa.client.Client;
+import archorg.arch.gwa.client.beacon.NonNullIntegerBeacon;
 import archorg.arch.gwa.client.serialization.StatefulAction;
 import archorg.arch.gwa.client.serialization.StatefulActionImpl;
 import archorg.arch.gwa.client.serialization.Trigger;
 import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
 import archorg.arch.gwa.client.serialization.model.ObjectStateEngine;
-import archorg.arch.gwa.client.serialization.model.ReadableStateModel;
-import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
-import archorg.arch.gwa.client.serialization.model.WritableStateModel;
+import archorg.arch.gwa.client.serialization.model.parts.BeaconStateEngineAggregation;
 import archorg.arch.gwa.shared.Input;
 import archorg.arch.gwa.shared.Output;
 
@@ -70,87 +69,47 @@ public class ChildModel
   public SimpleBeaconReadable<? extends Iterable<? extends Integer>> results =
     results_impl;
 
-  private void serve()
-  {
-    Input inp = new Input();
-    message_impl.setIfNotEqual(null);
-    inp.input = input_impl.get();
-    Client.stub.serve(inp,
-      new AsyncCallback<Output>()
-      {
-        @Override
-        public void onFailure(
-          Throwable caught)
-        {
-          message_impl.setIfNotEqual(caught.getClass().getName());
-        }
-
-        @Override
-        public void onSuccess(
-          Output result)
-        {
-          if (result.errorOccurred)
-            message_impl.setIfNotEqual(result.errorMessage);
-          else
-            results_impl.setNevertheless(result.output);
-        }
-      });
-  }
-
-  private final ObjectStateEngine engine = new ObjectStateEngine()
-  {
-    @Override
-    public String dump(
-      WritableStateModel s,
-      StatefulAction a)
+  private final ObjectStateEngine engine = new BeaconStateEngineAggregation(
+    new NonNullIntegerBeacon("input", input, 1)
     {
-      int curr = input.get();
-      if (a == next_action_impl)
-        curr = curr + 1;
-      String id = s.getID();
-      if (curr != 1)
+      @Override
+      protected Integer transform(
+        Integer value,
+        StatefulAction a)
       {
-        s.fold(id,
-          "input",
-          "" + curr);
+        if (a == next_action_impl)
+          return value + 1;
+        return value;
       }
-      return id;
-    }
 
-    @Override
-    public void load(
-      boolean validate,
-      ReadableStateModel s,
-      String id) throws StateSerializationFormatException
-    {
-      if (!s.specifies(id,
-        "input"))
+      @Override
+      protected void postLoad()
       {
-        if (!validate)
-          input_impl.setIfNotEqual(1);
-        return;
-      }
-      String du = s.unfold(id,
-        "input");
-      try
-      {
-        int parseInt = Integer.parseInt(du);
-        if (!validate)
-          input_impl.setIfNotEqual(parseInt);
-      }
-      catch (NumberFormatException e)
-      {
-        throw new StateSerializationFormatException("Integer.parseInt(" + du
-            + ")");
-      }
-    }
+        Input inp = new Input();
+        message_impl.setIfNotEqual(null);
+        inp.input = input_impl.get();
+        Client.stub.serve(inp,
+          new AsyncCallback<Output>()
+          {
+            @Override
+            public void onFailure(
+              Throwable caught)
+            {
+              message_impl.setIfNotEqual(caught.getClass().getName());
+            }
 
-    @Override
-    public void postLoad()
-    {
-      serve();
-    }
-  };
+            @Override
+            public void onSuccess(
+              Output result)
+            {
+              if (result.errorOccurred)
+                message_impl.setIfNotEqual(result.errorMessage);
+              else
+                results_impl.setNevertheless(result.output);
+            }
+          });
+      }
+    });
 
   @Override
   public ObjectStateEngine getObjectStateEngine()
