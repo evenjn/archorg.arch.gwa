@@ -104,28 +104,20 @@ public class ChildModel
     return new SerializableState()
     {
       @Override
-      public void dump(
+      public String dump(
         WritableStateModel s,
-        String id,
         StatefulAction a)
       {
         int curr = input.get();
         if (a == next_action_impl)
           curr = curr + 1;
-        if (curr != 1)
-          s.fold(id,
-            "input",
-            "" + curr);
-      }
-
-      @Override
-      public boolean isAtDefault(
-        StatefulAction a)
-      {
-        int curr = input.get();
-        if (a == next_action_impl)
-          curr = curr + 1;
-        return curr == 1;
+        if (curr == 1)
+          return s.defaultMarker();
+        String id = s.getID();
+        s.fold(id,
+          "input",
+          "" + curr);
+        return id;
       }
     };
   }

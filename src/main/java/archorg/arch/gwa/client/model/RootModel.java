@@ -8,12 +8,10 @@ import it.celi.research.balrog.event.EventChannel;
 import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
 import archorg.arch.gwa.client.beacon.CICIBeacon;
-import archorg.arch.gwa.client.beacon.CINonNullBooleanBeacon;
 import archorg.arch.gwa.client.serialization.CompositeStateLoader;
 import archorg.arch.gwa.client.serialization.HasBoth;
 import archorg.arch.gwa.client.serialization.SerializableState;
 import archorg.arch.gwa.client.serialization.StateLoader;
-import archorg.arch.gwa.client.serialization.StatefulAction;
 import archorg.arch.gwa.client.serialization.StatefulActionImpl;
 import archorg.arch.gwa.client.serialization.Trigger;
 
@@ -160,7 +158,7 @@ public class RootModel
     public MyBoon()
     {
       compose(ccc);
-      compose(new CINonNullBooleanBeacon("hc", has_child_impl, false));
+      // compose(new CINonNullBooleanBeacon("hc", has_child_impl, false));
     }
 
     @Override
@@ -178,15 +176,6 @@ public class RootModel
     {
       message_impl.setIfNotEqual(null);
       // has_child_impl.setIfNotEqual(false);
-    }
-
-    @Override
-    public boolean isAtDefault(
-      StatefulAction a)
-    {
-      // TODO Auto-generated method stub
-      return has_child_impl.valueEquals(false)
-          && ccc.getSerializableState().isAtDefault(a);
     }
   }
 

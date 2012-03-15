@@ -1,9 +1,10 @@
 package archorg.arch.gwa.client.beacon;
 
 import it.celi.research.balrog.beacon.SimpleBeacon;
+import archorg.arch.gwa.client.serialization.BeaconHasBoth;
 import archorg.arch.gwa.client.serialization.HasBoth;
 import archorg.arch.gwa.client.serialization.ReadableStateModel;
-import archorg.arch.gwa.client.serialization.SerializableState;
+import archorg.arch.gwa.client.serialization.SerializableBeaconState;
 import archorg.arch.gwa.client.serialization.StateLoader;
 import archorg.arch.gwa.client.serialization.StateSerializationFormatException;
 import archorg.arch.gwa.client.serialization.StatefulAction;
@@ -18,7 +19,7 @@ import archorg.arch.gwa.client.serialization.WritableStateModel;
  */
 public abstract class CICIBeacon<T extends HasBoth>
   implements
-  HasBoth
+  BeaconHasBoth
 {
   private final String beaconID;
 
@@ -117,37 +118,24 @@ public abstract class CICIBeacon<T extends HasBoth>
   }
 
   @Override
-  public SerializableState getSerializableState()
+  public SerializableBeaconState getSerializableState()
   {
-    return new SerializableState()
+    return new SerializableBeaconState()
     {
-      public boolean isAtDefault(
-        StatefulAction a)
-      {
-        if (!beacon.isNull())
-          return false;
-        return true;
-      }
-
       @Override
-      public void dump(
+      public boolean dump(
         WritableStateModel s,
-        String id,
+        String container_id,
         StatefulAction a)
       {
-        // default can only be null
-        // if default, this method will never be called
-        String vid = s.defaultMarker();
-        if (!beacon.get().getSerializableState().isAtDefault(a))
-        {
-          vid = s.newID();
-          beacon.get().getSerializableState().dump(s,
-            vid,
-            a);
-        }
-        s.fold(id,
+        if (beacon.isNull())
+          return false;
+        String vid = beacon.get().getSerializableState().dump(s,
+          a);
+        s.fold(container_id,
           beaconID,
           vid);
+        return true;
       }
     };
   }

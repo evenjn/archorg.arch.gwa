@@ -2,16 +2,15 @@ package archorg.arch.gwa.client.serialization;
 
 import java.util.ArrayList;
 
-
 public abstract class CompositeStateLoader
   implements
   StateLoader,
   SerializableState
 {
-  private ArrayList<HasBoth> ios = new ArrayList<HasBoth>();
+  private ArrayList<BeaconHasBoth> ios = new ArrayList<BeaconHasBoth>();
 
   public void compose(
-    HasBoth beacon)
+    BeaconHasBoth beacon)
   {
     ios.add(beacon);
   }
@@ -53,16 +52,24 @@ public abstract class CompositeStateLoader
   }
 
   @Override
-  public void dump(
+  public String dump(
     WritableStateModel s,
-    String id,
     StatefulAction a)
   {
-    for (HasSerializableState bs : ios)
-      if (!bs.getSerializableState().isAtDefault(a))
-        bs.getSerializableState().dump(s,
-          id,
-          a);
+    String id = s.getID();
+    boolean isdefault = true;
+    for (BeaconHasBoth bs : ios)
+    {
+      boolean not_empty = bs.getSerializableState().dump(s,
+        id,
+        a);
+      if (not_empty)
+        isdefault = false;
+    }
+    if (isdefault)
+      return s.defaultMarker();
+    else
+      return id;
   }
 
   protected abstract void resetTransient();

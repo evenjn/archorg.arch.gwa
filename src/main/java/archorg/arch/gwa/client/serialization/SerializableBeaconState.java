@@ -1,8 +1,9 @@
 package archorg.arch.gwa.client.serialization;
 
-public interface SerializableState
+public interface SerializableBeaconState
 {
-  String dump(
+  boolean dump(
     WritableStateModel s,
+    String container_id,
     StatefulAction a);
 }

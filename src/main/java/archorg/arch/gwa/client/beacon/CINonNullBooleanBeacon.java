@@ -1,9 +1,9 @@
 package archorg.arch.gwa.client.beacon;
 
 import it.celi.research.balrog.beacon.SimpleBeacon;
-import archorg.arch.gwa.client.serialization.HasBoth;
+import archorg.arch.gwa.client.serialization.BeaconHasBoth;
 import archorg.arch.gwa.client.serialization.ReadableStateModel;
-import archorg.arch.gwa.client.serialization.SerializableState;
+import archorg.arch.gwa.client.serialization.SerializableBeaconState;
 import archorg.arch.gwa.client.serialization.StateLoader;
 import archorg.arch.gwa.client.serialization.StateSerializationFormatException;
 import archorg.arch.gwa.client.serialization.StatefulAction;
@@ -11,7 +11,7 @@ import archorg.arch.gwa.client.serialization.WritableStateModel;
 
 public class CINonNullBooleanBeacon
   implements
-  HasBoth
+  BeaconHasBoth
 {
   private final String beaconID;
 
@@ -34,27 +34,26 @@ public class CINonNullBooleanBeacon
     this.defaultt = defaultt;
   }
 
-  public SerializableState getSerializableState()
+  public SerializableBeaconState getSerializableState()
   {
-    return new SerializableState()
+    return new SerializableBeaconState()
     {
-      public boolean isAtDefault(
-        StatefulAction a)
-      {
-        return beacon.valueEquals(defaultt);
-      }
-
-      public void dump(
+      public boolean dump(
         WritableStateModel s,
-        String id,
+        String container_id,
         StatefulAction a)
       {
         if (beacon.isNull())
           throw new IllegalStateException(
             "null boolean is currently not supported");
-        s.fold(id,
-          beaconID,
-          beacon.get().toString());
+        if (!beacon.valueEquals(defaultt))
+        {
+          s.fold(container_id,
+            beaconID,
+            beacon.get().toString());
+          return true;
+        }
+        return false;
       }
     };
   }

@@ -12,6 +12,11 @@ public class StateModelImpl
   public void load(
     HasStateLoader root) throws StateSerializationFormatException
   {
+    if (map_s.isEmpty())
+    {
+      root.getStateLoader().resetToDefault();
+      return;
+    }
     root.getStateLoader().validate(this,
       "0");
     root.getStateLoader().load(this,
@@ -24,9 +29,7 @@ public class StateModelImpl
     StatefulAction a)
   {
     SerializableState serializableState = s.getSerializableState();
-    String newID = newID();
     serializableState.dump(this,
-      newID,
       a);
   }
 
@@ -42,6 +45,8 @@ public class StateModelImpl
     String elementId,
     String part) throws StateSerializationFormatException
   {
+    if (elementId.equals(defaultMarker()))
+      return false;
     Map<String, String> map = map_s.get(elementId);
     if (map == null)
       throw new IllegalArgumentException("Element ID not valid.");
@@ -62,8 +67,7 @@ public class StateModelImpl
     return map.get(part);
   }
 
-  @Override
-  public String newID()
+  private String newID()
   {
     String id = new Integer(sequence).toString();
     sequence = sequence + 1;
@@ -97,5 +101,11 @@ public class StateModelImpl
     String id)
   {
     return id.equals("D");
+  }
+
+  @Override
+  public String getID()
+  {
+    return newID();
   }
 }
