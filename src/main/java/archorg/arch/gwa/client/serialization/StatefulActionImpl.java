@@ -1,6 +1,9 @@
 package archorg.arch.gwa.client.serialization;
 
+import it.celi.research.balrog.beacon.SimpleBeaconImpl;
 import it.celi.research.balrog.beacon.SimpleBeaconReadable;
+import it.celi.research.balrog.event.Observable;
+import it.celi.research.balrog.event.Observer;
 
 public class StatefulActionImpl
   implements
@@ -14,11 +17,23 @@ public class StatefulActionImpl
     statemanager = sm;
   }
 
-  private final SimpleBeaconReadable<String> next_state;
+  private final SimpleBeaconImpl<String> next_state;
 
   public StatefulActionImpl()
   {
-    next_state = statemanager.createActionBeacon(this);
+    next_state = new SimpleBeaconImpl<String>("initializing");
+    Observer<Void> observer = new Observer<Void>()
+    {
+      @Override
+      public void notice(
+        Observable<? extends Void> observable,
+        Void message)
+      {
+        next_state.setNevertheless(statemanager
+          .serialize(StatefulActionImpl.this));
+      }
+    };
+    statemanager.getEnvironmentChangeChannel().subscribe(observer);
   }
 
   @Override

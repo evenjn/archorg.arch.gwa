@@ -26,8 +26,9 @@ public class Client
     // state
     StatefulActionImpl.setStateManager(sm);
     // create the model
-    final RootModel rm = new RootModel(sm.getEnvironmentChangeObserver());
-    sm.setRoot(rm);
+    final RootModel rm =
+      new RootModel(sm.getEnvironmentChangeChannel(),
+        sm.getEnvironmentChangeObserver());
     // errors in the loading are routed using this observer
     sm.getMessage().subscribe(new Observer<String>()
     {
@@ -43,6 +44,7 @@ public class Client
     RootView rv =
       new RootView(rm.getHasChildB(), rm.getChildBR(), rm.getMessageBR());
     // publish the view
+    sm.setRoot(rm);
     RootPanel.get().add(rv);
   }
 }

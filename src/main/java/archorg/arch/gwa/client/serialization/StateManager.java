@@ -91,24 +91,6 @@ public abstract class StateManager
     return next_state;
   }
 
-  private EventChannel<Void> environment_change = new EventChannel<Void>();
-
-  public Observer<Object> getEnvironmentChangeObserver()
-  {
-    return environmentChangeObserver;
-  }
-
-  private Observer<Object> environmentChangeObserver = new Observer<Object>()
-  {
-    @Override
-    public void notice(
-      Observable<? extends Object> observable,
-      Object message)
-    {
-      environment_change.notify(null);
-    }
-  };
-
   /**
    * Stores the current state of the application in the URL.
    */
@@ -116,6 +98,8 @@ public abstract class StateManager
     StatefulAction a)
   {
     StateModel si = create();
+    if (root == null)
+      throw new IllegalStateException("Root has not been set yet.");
     si.dump(root,
       a);
     return si.toString();
@@ -134,4 +118,27 @@ public abstract class StateManager
 
   protected abstract StateModel create(
     String decode) throws StateSerializationFormatException;
+
+  public EventChannel<Void> getEnvironmentChangeChannel()
+  {
+    return environment_change;
+  }
+
+  private EventChannel<Void> environment_change = new EventChannel<Void>();
+
+  public Observer<Object> getEnvironmentChangeObserver()
+  {
+    return environmentChangeObserver;
+  }
+
+  private Observer<Object> environmentChangeObserver = new Observer<Object>()
+  {
+    @Override
+    public void notice(
+      Observable<? extends Object> observable,
+      Object message)
+    {
+      environment_change.notify(null);
+    }
+  };
 }

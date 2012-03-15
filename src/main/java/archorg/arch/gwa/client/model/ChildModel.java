@@ -3,6 +3,7 @@ package archorg.arch.gwa.client.model;
 import it.celi.research.balrog.beacon.SimpleBeacon;
 import it.celi.research.balrog.beacon.SimpleBeaconImpl;
 import it.celi.research.balrog.beacon.SimpleBeaconReadable;
+import it.celi.research.balrog.event.EventChannel;
 import it.celi.research.balrog.event.Observer;
 
 import java.util.ArrayList;
@@ -28,16 +29,22 @@ public class ChildModel
 {
   private final SimpleBeacon<String> message_impl;
 
+  private final EventChannel<Void> envchan;
+
   public ChildModel(
+    EventChannel<Void> envchan,
     Observer<? super Object> envco,
     SimpleBeacon<String> message_impl,
     Trigger<Object> reset_message)
   {
+    this.envchan = envchan;
     this.message_impl = message_impl;
     if (reset_message != null)
       input_impl.subscribe(reset_message);
     if (envco != null)
+    {
       input_impl.subscribe(envco);
+    }
   }
 
   private final StatefulActionImpl action_impl = new StatefulActionImpl();

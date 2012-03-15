@@ -4,6 +4,7 @@ import it.celi.research.balrog.beacon.SimpleBeacon;
 import it.celi.research.balrog.beacon.SimpleBeaconChange;
 import it.celi.research.balrog.beacon.SimpleBeaconImpl;
 import it.celi.research.balrog.beacon.SimpleBeaconReadable;
+import it.celi.research.balrog.event.EventChannel;
 import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
 import archorg.arch.gwa.client.beacon.CICIBeacon;
@@ -66,9 +67,13 @@ public class RootModel
 
   private final StatefulActionImpl child_action = new StatefulActionImpl();
 
+  private final EventChannel<Void> envchan;
+
   public RootModel(
+    EventChannel<Void> envchan,
     Observer<? super Object> envco)
   {
+    this.envchan = envchan;
     this.envco = envco;
     has_child_impl.subscribe(create_child_trigger);
     has_child_impl.subscribe(reset_message_trigger);
@@ -98,11 +103,13 @@ public class RootModel
         return;
       if (message.getNew())
       {
-        child_impl.setNevertheless(new ChildModel(envco, message_impl,
+        child_impl.setNevertheless(new ChildModel(envchan, envco, message_impl,
           reset_message_trigger));
+        envchan.notify(null);
       } else
       {
         child_impl.setIfNotEqual(null);
+        envchan.notify(null);
       }
     }
   };
@@ -135,11 +142,12 @@ public class RootModel
     {
       if (dryrun)
       {
-        ChildModel childModel = new ChildModel(null, message_impl, null);
+        ChildModel childModel = new ChildModel(null, null, message_impl, null);
         return childModel;
       }
       ChildModel childModel =
-        new ChildModel(envco, message_impl, reset_message_trigger);
+        new ChildModel(envchan, envco, message_impl, reset_message_trigger);
+      envchan.notify(null);
       return childModel;
     }
   };
