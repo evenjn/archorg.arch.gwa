@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class StateModelImpl
   implements
   StateModel,
@@ -11,22 +12,24 @@ public class StateModelImpl
   WritableStateModel
 {
   public void load(
-    HasSerializableState root) throws StateSerializationFormatException
+    HasStateLoader root) throws StateSerializationFormatException
   {
-    root.getSerializableState().validate(this,
+    root.getStateLoader().validate(this,
       "0");
-    root.getSerializableState().load(this,
+    root.getStateLoader().load(this,
       "0");
-    root.getSerializableState().postLoad();
+    root.getStateLoader().postLoad();
   }
 
   public void dump(
-    HasSerializableState s)
+    HasSerializableState s,
+    StatefulAction a)
   {
     SerializableState serializableState = s.getSerializableState();
     String newID = newID();
     serializableState.dump(this,
-      newID);
+      newID,
+      a);
   }
 
   protected int sequence = 0;
@@ -84,15 +87,17 @@ public class StateModelImpl
     map.put(part,
       value);
   }
-  // @Override
-  // public String defaultMarker()
-  // {
-  // return "D";
-  // }
-  //
-  // @Override
-  // public boolean isDefaultMarker(String id)
-  // {
-  // return id.equals("D");
-  // }
+
+  @Override
+  public String defaultMarker()
+  {
+    return "D";
+  }
+
+  @Override
+  public boolean isDefaultMarker(
+    String id)
+  {
+    return id.equals("D");
+  }
 }

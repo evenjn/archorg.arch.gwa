@@ -1,19 +1,21 @@
 package archorg.arch.gwa.client.model;
 
 import it.celi.research.balrog.beacon.SimpleBeacon;
-import it.celi.research.balrog.beacon.SimpleBeaconChange;
+import it.celi.research.balrog.beacon.SimpleBeaconImpl;
 import it.celi.research.balrog.beacon.SimpleBeaconReadable;
-import it.celi.research.balrog.event.Observable;
+import it.celi.research.balrog.event.Observer;
 
 import java.util.ArrayList;
 
 import archorg.arch.gwa.client.Client;
-import archorg.arch.gwa.client.serialization.HasSerializableState;
+import archorg.arch.gwa.client.serialization.HasBoth;
 import archorg.arch.gwa.client.serialization.ReadableStateModel;
 import archorg.arch.gwa.client.serialization.SerializableState;
+import archorg.arch.gwa.client.serialization.StateLoader;
 import archorg.arch.gwa.client.serialization.StateSerializationFormatException;
+import archorg.arch.gwa.client.serialization.StatefulAction;
+import archorg.arch.gwa.client.serialization.StatefulActionImpl;
 import archorg.arch.gwa.client.serialization.Trigger;
-import archorg.arch.gwa.client.serialization.TriggerBeacon;
 import archorg.arch.gwa.client.serialization.WritableStateModel;
 import archorg.arch.gwa.shared.Input;
 import archorg.arch.gwa.shared.Output;
@@ -22,42 +24,43 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class ChildModel
   implements
-  HasSerializableState
+  HasBoth
 {
   private final SimpleBeacon<String> message_impl;
 
   public ChildModel(
+    Observer<? super Object> envco,
     SimpleBeacon<String> message_impl,
     Trigger<Object> reset_message)
   {
     this.message_impl = message_impl;
-    action_impl.setSaveOnEvent(true);
-    action_impl.subscribe(new Trigger<Void>()
-    {
-      @Override
-      public void onTrigger(
-        Observable<? extends SimpleBeaconChange<? extends Void>> observable,
-        SimpleBeaconChange<? extends Void> message)
-      {
-        serve();
-      }
-    });
-    input_impl.subscribe(reset_message);
+    if (reset_message != null)
+      input_impl.subscribe(reset_message);
+    if (envco != null)
+      input_impl.subscribe(envco);
   }
 
-  private TriggerBeacon<Void> action_impl = new TriggerBeacon<Void>(null);
+  private final StatefulActionImpl action_impl = new StatefulActionImpl();
 
-  public SimpleBeacon<Void> getActionW()
+  public StatefulAction getActionCurrent()
   {
     return action_impl;
   }
 
-  private TriggerBeacon<Integer> input_impl = new TriggerBeacon<Integer>(1);
+  private final StatefulActionImpl next_action_impl = new StatefulActionImpl();
+
+  public StatefulAction getActionNext()
+  {
+    return next_action_impl;
+  }
+
+  private SimpleBeaconImpl<Integer> input_impl = new SimpleBeaconImpl<Integer>(
+    1);
 
   public SimpleBeacon<Integer> input = input_impl;
 
-  private TriggerBeacon<ArrayList<Integer>> results_impl =
-    new TriggerBeacon<ArrayList<Integer>>();
+  private SimpleBeaconImpl<ArrayList<Integer>> results_impl =
+    new SimpleBeaconImpl<ArrayList<Integer>>();
 
   public SimpleBeaconReadable<? extends Iterable<? extends Integer>> results =
     results_impl;
@@ -89,91 +92,100 @@ public class ChildModel
       });
   }
 
-  @Override
   public SerializableState getSerializableState()
   {
-    return state;
+    return new SerializableState()
+    {
+      @Override
+      public void dump(
+        WritableStateModel s,
+        String id,
+        StatefulAction a)
+      {
+        int curr = input.get();
+        if (a == next_action_impl)
+          curr = curr + 1;
+        if (curr != 1)
+          s.fold(id,
+            "input",
+            "" + curr);
+      }
+
+      @Override
+      public boolean isAtDefault(
+        StatefulAction a)
+      {
+        int curr = input.get();
+        if (a == next_action_impl)
+          curr = curr + 1;
+        return curr == 1;
+      }
+    };
   }
 
-  private SerializableState state = new MySerializableState();
-
-  private class MySerializableState
-    implements
-    SerializableState
+  @Override
+  public StateLoader getStateLoader()
   {
-    @Override
-    public void dump(
-      WritableStateModel s,
-      String id)
+    // TODO Auto-generated method stub
+    return new StateLoader()
     {
-      if (!input.valueEquals(1))
-        s.fold(id,
-          "input",
-          input.get().toString());
-    }
+      @Override
+      public void load(
+        ReadableStateModel s,
+        String id) throws StateSerializationFormatException
+      {
+        if (!s.specifies(id,
+          "input"))
+        {
+          input_impl.setIfNotEqual(1);
+          return;
+        }
+        String du = s.unfold(id,
+          "input");
+        try
+        {
+          int parseInt = Integer.parseInt(du);
+          input_impl.setIfNotEqual(parseInt);
+        }
+        catch (NumberFormatException e)
+        {
+          throw new StateSerializationFormatException("Integer.parseInt(" + du
+              + ")");
+        }
+      }
 
-    // @Override
-    // public void resetToDefault()
-    // {
-    // input_impl.setIfNotEqual(1);
-    // }
-    //
-    @Override
-    public boolean isAtDefault()
-    {
-      return input_impl.valueEquals(1);
-    }
+      @Override
+      public void validate(
+        ReadableStateModel s,
+        String id) throws StateSerializationFormatException
+      {
+        if (!s.specifies(id,
+          "input"))
+          return;
+        String intr = s.unfold(id,
+          "input");
+        try
+        {
+          Integer.parseInt(intr);
+        }
+        catch (NumberFormatException e)
+        {
+          throw new StateSerializationFormatException("Integer.parseInt("
+              + intr + ")");
+        }
+      }
 
-    @Override
-    public void load(
-      ReadableStateModel s,
-      String id) throws StateSerializationFormatException
-    {
-      if (!s.specifies(id,
-        "input"))
+      @Override
+      public void postLoad()
+      {
+        serve();
+      }
+
+      @Override
+      public void resetToDefault()
       {
         input_impl.setIfNotEqual(1);
-        return;
       }
-      String du = s.unfold(id,
-        "input");
-      try
-      {
-        int parseInt = Integer.parseInt(du);
-        input_impl.setIfNotEqual(parseInt);
-      }
-      catch (NumberFormatException e)
-      {
-        throw new StateSerializationFormatException("Integer.parseInt(" + du
-            + ")");
-      }
-    }
-
-    @Override
-    public void validate(
-      ReadableStateModel s,
-      String id) throws StateSerializationFormatException
-    {
-      if (!s.specifies(id,
-        "input"))
-        return;
-      String intr = s.unfold(id,
-        "input");
-      try
-      {
-        Integer.parseInt(intr);
-      }
-      catch (NumberFormatException e)
-      {
-        throw new StateSerializationFormatException("Integer.parseInt(" + intr
-            + ")");
-      }
-    }
-
-    @Override
-    public void postLoad()
-    {
-      serve();
-    }
+    };
   }
 }

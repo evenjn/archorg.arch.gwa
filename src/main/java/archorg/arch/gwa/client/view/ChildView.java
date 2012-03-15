@@ -4,12 +4,13 @@ import it.celi.research.balrog.beacon.SimpleBeacon;
 import it.celi.research.balrog.beacon.SimpleBeaconChange;
 import it.celi.research.balrog.beacon.SimpleBeaconObserver;
 import it.celi.research.balrog.beacon.SimpleBeaconReadable;
-import it.celi.research.balrog.beacon.SimpleBeaconWritable;
 import it.celi.research.balrog.event.Observable;
 import archorg.arch.gwa.client.join.StringToIntegerJoin;
+import archorg.arch.gwa.client.serialization.StatefulAction;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
@@ -28,19 +29,36 @@ public class ChildView
 
   public ChildView(
     final SimpleBeacon<Integer> input,
-    final SimpleBeaconWritable<Void> go,
+    final StatefulAction action_curr,
+    final StatefulAction action_next,
     final SimpleBeaconReadable<? extends Iterable<? extends Integer>> results)
   {
     StringToIntegerJoin.join(box,
       input);
-    Button button = new Button("Calculate!");
+    final Anchor link = new Anchor();
+    link.setText("Calculate Next!");
+    link.setHref(action_next.getResultingState().get());
+    action_next.getResultingState()
+      .subscribe(new SimpleBeaconObserver<String>()
+      {
+        @Override
+        public
+          void
+          notice(
+            Observable<? extends SimpleBeaconChange<? extends String>> observable,
+            SimpleBeaconChange<? extends String> message)
+        {
+          link.setHref("#" + message.getNew());
+        }
+      });
+    Button button = new Button("Calculate This!");
     button.addClickHandler(new ClickHandler()
     {
       @Override
       public void onClick(
         ClickEvent event)
       {
-        go.setNevertheless(null);
+        action_curr.execute();
       }
     });
     results.subscribe(new SimpleBeaconObserver<Iterable<? extends Integer>>()
@@ -66,6 +84,7 @@ public class ChildView
       }
     });
     main.add(box);
+    main.add(link);
     main.add(button);
     main.add(results_panel);
     initWidget(main);

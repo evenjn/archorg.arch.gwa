@@ -9,5 +9,7 @@ public interface ReadableStateModel
   String unfold(
     String elementId,
     String part) throws StateSerializationFormatException;
-  // boolean isDefaultMarker(String id);
+
+  boolean isDefaultMarker(
+    String id);
 }

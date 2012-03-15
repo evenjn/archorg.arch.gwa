@@ -2,15 +2,19 @@ package archorg.arch.gwa.client.model;
 
 import it.celi.research.balrog.beacon.SimpleBeacon;
 import it.celi.research.balrog.beacon.SimpleBeaconChange;
+import it.celi.research.balrog.beacon.SimpleBeaconImpl;
 import it.celi.research.balrog.beacon.SimpleBeaconReadable;
 import it.celi.research.balrog.event.Observable;
-import archorg.arch.gwa.client.beacon.NullDefaultBeacon;
-import archorg.arch.gwa.client.beacon.SerializableHasSerializableStateBeacon;
-import archorg.arch.gwa.client.serialization.CompositeSerializableState;
-import archorg.arch.gwa.client.serialization.HasSerializableState;
+import it.celi.research.balrog.event.Observer;
+import archorg.arch.gwa.client.beacon.CICIBeacon;
+import archorg.arch.gwa.client.beacon.CINonNullBooleanBeacon;
+import archorg.arch.gwa.client.serialization.CompositeStateLoader;
+import archorg.arch.gwa.client.serialization.HasBoth;
 import archorg.arch.gwa.client.serialization.SerializableState;
+import archorg.arch.gwa.client.serialization.StateLoader;
+import archorg.arch.gwa.client.serialization.StatefulAction;
+import archorg.arch.gwa.client.serialization.StatefulActionImpl;
 import archorg.arch.gwa.client.serialization.Trigger;
-import archorg.arch.gwa.client.serialization.TriggerBeacon;
 
 /**
  * Because View objects are connected to Model objects with a double link (via a
@@ -24,18 +28,21 @@ import archorg.arch.gwa.client.serialization.TriggerBeacon;
  */
 public class RootModel
   implements
-  HasSerializableState
+  HasBoth
 {
   // output only, transient
-  private TriggerBeacon<String> message_impl = new TriggerBeacon<String>(null);
+  private SimpleBeaconImpl<String> message_impl = new SimpleBeaconImpl<String>(
+    null);
 
   // input/output only, non-transient
-  private TriggerBeacon<Boolean> has_child_impl = new TriggerBeacon<Boolean>(
-    false);
+  private SimpleBeaconImpl<Boolean> has_child_impl =
+    new SimpleBeaconImpl<Boolean>(false);
 
   // output only, non-transient
-  private NullDefaultBeacon<ChildModel> child_impl =
-    new NullDefaultBeacon<ChildModel>();
+  private SimpleBeaconImpl<ChildModel> child_impl =
+    new SimpleBeaconImpl<ChildModel>();
+
+  private final Observer<? super Object> envco;
 
   public SimpleBeacon<? super String> getMessageBW()
   {
@@ -57,13 +64,27 @@ public class RootModel
     return child_impl;
   }
 
-  public RootModel()
+  private final StatefulActionImpl child_action = new StatefulActionImpl();
+
+  public RootModel(
+    Observer<? super Object> envco)
   {
+    this.envco = envco;
     has_child_impl.subscribe(create_child_trigger);
     has_child_impl.subscribe(reset_message_trigger);
     child_impl.subscribe(reset_message_trigger);
-    has_child_impl.setSaveOnEvent(true);
-    state = new MySerializableState();
+    has_child_impl.subscribe(envco);
+    // has_child_impl.subscribe(new Observer<Object>()
+    // {
+    // @Override
+    // public void notice(
+    // Observable<? extends Object> observable,
+    // Object message)
+    // {
+    // child_action.execute();
+    // }
+    // });
+    // has_child_impl.setSaveOnEvent(true);// omg!
   }
 
   private Trigger<Boolean> create_child_trigger = new Trigger<Boolean>()
@@ -77,7 +98,7 @@ public class RootModel
         return;
       if (message.getNew())
       {
-        child_impl.setNevertheless(new ChildModel(message_impl,
+        child_impl.setNevertheless(new ChildModel(envco, message_impl,
           reset_message_trigger));
       } else
       {
@@ -98,33 +119,41 @@ public class RootModel
   };
 
   @Override
-  public SerializableState getSerializableState()
+  public StateLoader getStateLoader()
   {
-    return state;
+    return myboon;
   }
 
-  private SerializableState state;
-
-  private class MySerializableState
-    extends
-    CompositeSerializableState
+  private final CICIBeacon<ChildModel> ccc = new CICIBeacon<ChildModel>(
+    "child", child_impl)
   {
-    public MySerializableState()
+    // our problem here is that we can't just create and destroy ChildModels
+    // without managing the claudenda
+    @Override
+    public ChildModel create(
+      boolean dryrun)
     {
-      compose(new SerializableHasSerializableStateBeacon<ChildModel>("child",
-        child_impl)
+      if (dryrun)
       {
-        // our problem here is that we can't just create and destroy ChildModels
-        // without managing the claudenda
-        @Override
-        public ChildModel create(
-          boolean dryrun)
-        {
-          ChildModel childModel =
-            new ChildModel(message_impl, reset_message_trigger);
-          return childModel;
-        }
-      });
+        ChildModel childModel = new ChildModel(null, message_impl, null);
+        return childModel;
+      }
+      ChildModel childModel =
+        new ChildModel(envco, message_impl, reset_message_trigger);
+      return childModel;
+    }
+  };
+
+  private MyBoon myboon = new MyBoon();
+
+  private class MyBoon
+    extends
+    CompositeStateLoader
+  {
+    public MyBoon()
+    {
+      compose(ccc);
+      compose(new CINonNullBooleanBeacon("hc", has_child_impl, false));
     }
 
     @Override
@@ -141,7 +170,22 @@ public class RootModel
     protected void resetTransient()
     {
       message_impl.setIfNotEqual(null);
-      has_child_impl.setIfNotEqual(false);
+      // has_child_impl.setIfNotEqual(false);
     }
+
+    @Override
+    public boolean isAtDefault(
+      StatefulAction a)
+    {
+      // TODO Auto-generated method stub
+      return has_child_impl.valueEquals(false)
+          && ccc.getSerializableState().isAtDefault(a);
+    }
+  }
+
+  @Override
+  public SerializableState getSerializableState()
+  {
+    return myboon;
   }
 }

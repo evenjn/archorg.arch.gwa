@@ -77,7 +77,8 @@ public class RootView
         {
           ChildModel model = change.getNew();
           childview =
-            new ChildView(model.input, model.getActionW(), model.results);
+            new ChildView(model.input, model.getActionCurrent(), model
+              .getActionNext(), model.results);
         }
         redraw();
       }
@@ -89,7 +90,9 @@ public class RootView
     if (child.isNotNull())
     {
       ChildModel model = child.get();
-      childview = new ChildView(model.input, model.getActionW(), model.results);
+      childview =
+        new ChildView(model.input, model.getActionCurrent(),
+          model.getActionNext(), model.results);
     }
     redraw();
     initWidget(main);

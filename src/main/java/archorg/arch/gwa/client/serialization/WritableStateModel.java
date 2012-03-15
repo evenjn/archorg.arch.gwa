@@ -4,7 +4,8 @@ public interface WritableStateModel
 {
   String newID();
 
-  // String defaultMarker();
+  String defaultMarker();
+
   void fold(
     String id,
     String part,
