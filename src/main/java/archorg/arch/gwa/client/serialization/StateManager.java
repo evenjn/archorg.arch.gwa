@@ -6,6 +6,9 @@ import it.celi.research.balrog.event.EventChannel;
 import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
 
+import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
+import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
+
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
@@ -13,7 +16,7 @@ import com.google.gwt.user.client.History;
 
 public class StateManager
 {
-  private HasBoth root;
+  private HasObjectStateEngine root;
 
   private boolean loading = false;
 
@@ -42,7 +45,7 @@ public class StateManager
   }
 
   public void setRoot(
-    HasBoth root)
+    HasObjectStateEngine root)
   {
     this.root = root;
     String token = History.getToken();

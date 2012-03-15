@@ -1,4 +1,4 @@
-package archorg.arch.gwa.client.serialization;
+package archorg.arch.gwa.client.serialization.model;
 
 public interface WritableStateModel
 {

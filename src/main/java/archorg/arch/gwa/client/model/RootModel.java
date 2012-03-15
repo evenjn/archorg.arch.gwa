@@ -8,12 +8,11 @@ import it.celi.research.balrog.event.EventChannel;
 import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
 import archorg.arch.gwa.client.beacon.CICIBeacon;
-import archorg.arch.gwa.client.serialization.CompositeStateLoader;
-import archorg.arch.gwa.client.serialization.HasBoth;
-import archorg.arch.gwa.client.serialization.SerializableState;
-import archorg.arch.gwa.client.serialization.StateLoader;
 import archorg.arch.gwa.client.serialization.StatefulActionImpl;
 import archorg.arch.gwa.client.serialization.Trigger;
+import archorg.arch.gwa.client.serialization.model.CompositeStateLoader;
+import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
+import archorg.arch.gwa.client.serialization.model.ObjectStateEngine;
 
 /**
  * Because View objects are connected to Model objects with a double link (via a
@@ -27,7 +26,7 @@ import archorg.arch.gwa.client.serialization.Trigger;
  */
 public class RootModel
   implements
-  HasBoth
+  HasObjectStateEngine
 {
   // output only, transient
   private SimpleBeaconImpl<String> message_impl = new SimpleBeaconImpl<String>(
@@ -123,12 +122,6 @@ public class RootModel
     }
   };
 
-  @Override
-  public StateLoader getStateLoader()
-  {
-    return myboon;
-  }
-
   private final CICIBeacon<ChildModel> ccc = new CICIBeacon<ChildModel>(
     "child", child_impl)
   {
@@ -149,7 +142,7 @@ public class RootModel
     }
   };
 
-  private MyBoon myboon = new MyBoon();
+  private MyBoon engine = new MyBoon();
 
   private class MyBoon
     extends
@@ -180,8 +173,8 @@ public class RootModel
   }
 
   @Override
-  public SerializableState getSerializableState()
+  public ObjectStateEngine getObjectStateEngine()
   {
-    return myboon;
+    return engine;
   }
 }

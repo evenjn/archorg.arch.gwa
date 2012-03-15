@@ -1,11 +1,11 @@
-package archorg.arch.gwa.client.uristate;
+package archorg.arch.gwa.client.serialization.model.uri;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import archorg.arch.gwa.client.serialization.StateModelImpl;
-import archorg.arch.gwa.client.serialization.StateSerializationFormatException;
+import archorg.arch.gwa.client.serialization.model.StateModelImpl;
+import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
 
 import com.google.gwt.http.client.URL;
 

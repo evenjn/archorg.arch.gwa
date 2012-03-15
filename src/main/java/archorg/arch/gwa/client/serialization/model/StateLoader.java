@@ -1,12 +1,9 @@
-package archorg.arch.gwa.client.serialization;
+package archorg.arch.gwa.client.serialization.model;
 
 public interface StateLoader
 {
   void load(
-    ReadableStateModel s,
-    String id) throws StateSerializationFormatException;
-
-  void validate(
+    boolean validate,
     ReadableStateModel s,
     String id) throws StateSerializationFormatException;
 

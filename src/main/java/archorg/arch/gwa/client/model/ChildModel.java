@@ -9,15 +9,14 @@ import it.celi.research.balrog.event.Observer;
 import java.util.ArrayList;
 
 import archorg.arch.gwa.client.Client;
-import archorg.arch.gwa.client.serialization.HasBoth;
-import archorg.arch.gwa.client.serialization.ReadableStateModel;
-import archorg.arch.gwa.client.serialization.SerializableState;
-import archorg.arch.gwa.client.serialization.StateLoader;
-import archorg.arch.gwa.client.serialization.StateSerializationFormatException;
 import archorg.arch.gwa.client.serialization.StatefulAction;
 import archorg.arch.gwa.client.serialization.StatefulActionImpl;
 import archorg.arch.gwa.client.serialization.Trigger;
-import archorg.arch.gwa.client.serialization.WritableStateModel;
+import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
+import archorg.arch.gwa.client.serialization.model.ObjectStateEngine;
+import archorg.arch.gwa.client.serialization.model.ReadableStateModel;
+import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
+import archorg.arch.gwa.client.serialization.model.WritableStateModel;
 import archorg.arch.gwa.shared.Input;
 import archorg.arch.gwa.shared.Output;
 
@@ -25,19 +24,18 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class ChildModel
   implements
-  HasBoth
+  HasObjectStateEngine
 {
   private final SimpleBeacon<String> message_impl;
 
-  private final EventChannel<Void> envchan;
-
+  // private final EventChannel<Void> envchan;
   public ChildModel(
     EventChannel<Void> envchan,
     Observer<? super Object> envco,
     SimpleBeacon<String> message_impl,
     Trigger<Object> reset_message)
   {
-    this.envchan = envchan;
+    // this.envchan = envchan;
     this.message_impl = message_impl;
     if (reset_message != null)
       input_impl.subscribe(reset_message);
@@ -99,87 +97,64 @@ public class ChildModel
       });
   }
 
-  public SerializableState getSerializableState()
+  private final ObjectStateEngine engine = new ObjectStateEngine()
   {
-    return new SerializableState()
+    @Override
+    public String dump(
+      WritableStateModel s,
+      StatefulAction a)
     {
-      @Override
-      public String dump(
-        WritableStateModel s,
-        StatefulAction a)
+      int curr = input.get();
+      if (a == next_action_impl)
+        curr = curr + 1;
+      String id = s.getID();
+      if (curr != 1)
       {
-        int curr = input.get();
-        if (a == next_action_impl)
-          curr = curr + 1;
-        String id = s.getID();
-        if (curr != 1)
-        {
-          s.fold(id,
-            "input",
-            "" + curr);
-        }
-        return id;
+        s.fold(id,
+          "input",
+          "" + curr);
       }
-    };
-  }
+      return id;
+    }
+
+    @Override
+    public void load(
+      boolean validate,
+      ReadableStateModel s,
+      String id) throws StateSerializationFormatException
+    {
+      if (!s.specifies(id,
+        "input"))
+      {
+        if (!validate)
+          input_impl.setIfNotEqual(1);
+        return;
+      }
+      String du = s.unfold(id,
+        "input");
+      try
+      {
+        int parseInt = Integer.parseInt(du);
+        if (!validate)
+          input_impl.setIfNotEqual(parseInt);
+      }
+      catch (NumberFormatException e)
+      {
+        throw new StateSerializationFormatException("Integer.parseInt(" + du
+            + ")");
+      }
+    }
+
+    @Override
+    public void postLoad()
+    {
+      serve();
+    }
+  };
 
   @Override
-  public StateLoader getStateLoader()
+  public ObjectStateEngine getObjectStateEngine()
   {
-    // TODO Auto-generated method stub
-    return new StateLoader()
-    {
-      @Override
-      public void load(
-        ReadableStateModel s,
-        String id) throws StateSerializationFormatException
-      {
-        if (!s.specifies(id,
-          "input"))
-        {
-          input_impl.setIfNotEqual(1);
-          return;
-        }
-        String du = s.unfold(id,
-          "input");
-        try
-        {
-          int parseInt = Integer.parseInt(du);
-          input_impl.setIfNotEqual(parseInt);
-        }
-        catch (NumberFormatException e)
-        {
-          throw new StateSerializationFormatException("Integer.parseInt(" + du
-              + ")");
-        }
-      }
-
-      @Override
-      public void validate(
-        ReadableStateModel s,
-        String id) throws StateSerializationFormatException
-      {
-        if (!s.specifies(id,
-          "input"))
-          return;
-        String intr = s.unfold(id,
-          "input");
-        try
-        {
-          Integer.parseInt(intr);
-        }
-        catch (NumberFormatException e)
-        {
-          throw new StateSerializationFormatException("Integer.parseInt("
-              + intr + ")");
-        }
-      }
-
-      @Override
-      public void postLoad()
-      {
-        serve();
-      }
-    };
+    return engine;
   }
 }

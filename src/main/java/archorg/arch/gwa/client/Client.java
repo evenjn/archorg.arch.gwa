@@ -5,7 +5,7 @@ import it.celi.research.balrog.event.Observer;
 import archorg.arch.gwa.client.model.RootModel;
 import archorg.arch.gwa.client.serialization.StateManager;
 import archorg.arch.gwa.client.serialization.StatefulActionImpl;
-import archorg.arch.gwa.client.uristate.URIStateModelFactory;
+import archorg.arch.gwa.client.serialization.model.uri.URIStateModelFactory;
 import archorg.arch.gwa.client.view.RootView;
 
 import com.google.gwt.core.client.EntryPoint;

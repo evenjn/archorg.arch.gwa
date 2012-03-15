@@ -1,11 +1,10 @@
-package archorg.arch.gwa.client.uristate;
+package archorg.arch.gwa.client.serialization.model.uri;
 
-import archorg.arch.gwa.client.serialization.HasSerializableState;
-import archorg.arch.gwa.client.serialization.HasStateLoader;
 import archorg.arch.gwa.client.serialization.StateModelFactory;
-import archorg.arch.gwa.client.serialization.StateModelImpl;
-import archorg.arch.gwa.client.serialization.StateSerializationFormatException;
 import archorg.arch.gwa.client.serialization.StatefulAction;
+import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
+import archorg.arch.gwa.client.serialization.model.StateModelImpl;
+import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
 
 public class URIStateModelFactory
   implements
@@ -13,7 +12,7 @@ public class URIStateModelFactory
 {
   @Override
   public String dump(
-    HasSerializableState state,
+    HasObjectStateEngine state,
     StatefulAction a)
   {
     StateModelImpl si = new URIFragmentStateModel();
@@ -24,7 +23,7 @@ public class URIStateModelFactory
 
   @Override
   public void load(
-    HasStateLoader root,
+    HasObjectStateEngine root,
     String encoded) throws StateSerializationFormatException
   {
     StateModelImpl load = new URIFragmentStateModel(encoded);

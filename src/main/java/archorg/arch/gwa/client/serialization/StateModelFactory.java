@@ -1,12 +1,15 @@
 package archorg.arch.gwa.client.serialization;
 
+import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
+import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
+
 public interface StateModelFactory
 {
   String dump(
-    HasSerializableState state,
+    HasObjectStateEngine state,
     StatefulAction a);
 
   void load(
-    HasStateLoader root,
+    HasObjectStateEngine root,
     String encoded) throws StateSerializationFormatException;
 }

@@ -1,8 +1,10 @@
-package archorg.arch.gwa.client.serialization;
+package archorg.arch.gwa.client.serialization.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import archorg.arch.gwa.client.serialization.StatefulAction;
 
 public class StateModelImpl
   implements
@@ -10,20 +12,22 @@ public class StateModelImpl
   WritableStateModel
 {
   public void load(
-    HasStateLoader root) throws StateSerializationFormatException
+    HasObjectStateEngine root) throws StateSerializationFormatException
   {
-    root.getStateLoader().validate(this,
+    root.getObjectStateEngine().load(true,
+      this,
       "0");
-    root.getStateLoader().load(this,
+    root.getObjectStateEngine().load(false,
+      this,
       "0");
-    root.getStateLoader().postLoad();
+    root.getObjectStateEngine().postLoad();
   }
 
   public void dump(
-    HasSerializableState s,
+    HasObjectStateEngine s,
     StatefulAction a)
   {
-    SerializableState serializableState = s.getSerializableState();
+    ObjectStateEngine serializableState = s.getObjectStateEngine();
     serializableState.dump(this,
       a);
   }
