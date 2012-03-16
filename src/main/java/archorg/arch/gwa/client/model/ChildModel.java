@@ -25,23 +25,63 @@ public class ChildModel
   implements
   HasObjectStateEngine
 {
-  private final SimpleBeacon<String> message_impl;
-
   // private final EventChannel<Void> envchan;
   public ChildModel(
+    final int default_value,
     EventChannel<Void> envchan,
     Observer<? super Object> envco,
-    SimpleBeacon<String> message_impl,
+    final SimpleBeacon<String> message_impl,
     Trigger<Object> reset_message)
   {
-    // this.envchan = envchan;
-    this.message_impl = message_impl;
+    input = new SimpleBeaconImpl<Integer>(default_value);
     if (reset_message != null)
-      input_impl.subscribe(reset_message);
+      input.subscribe(reset_message);
     if (envco != null)
     {
-      input_impl.subscribe(envco);
+      input.subscribe(envco);
     }
+    engine =
+      new BeaconStateEngineAggregation(new NonNullIntegerBeacon("input", input,
+        default_value)
+      {
+        @Override
+        protected Integer transform(
+          Integer value,
+          StatefulAction a)
+        {
+          if (a == next_action_impl)
+            return value + 1;
+          return value;
+        }
+
+        @Override
+        protected void postLoad()
+        {
+          Input inp = new Input();
+          message_impl.setIfNotEqual(null);
+          inp.input = input.get();
+          Client.stub.serve(inp,
+            new AsyncCallback<Output>()
+            {
+              @Override
+              public void onFailure(
+                Throwable caught)
+              {
+                message_impl.setIfNotEqual(caught.getClass().getName());
+              }
+
+              @Override
+              public void onSuccess(
+                Output result)
+              {
+                if (result.errorOccurred)
+                  message_impl.setIfNotEqual(result.errorMessage);
+                else
+                  results_impl.setNevertheless(result.output);
+              }
+            });
+        }
+      });
   }
 
   private final StatefulActionImpl action_impl = new StatefulActionImpl();
@@ -58,10 +98,7 @@ public class ChildModel
     return next_action_impl;
   }
 
-  private SimpleBeaconImpl<Integer> input_impl = new SimpleBeaconImpl<Integer>(
-    1);
-
-  public SimpleBeacon<Integer> input = input_impl;
+  public final SimpleBeacon<Integer> input;
 
   private SimpleBeaconImpl<ArrayList<Integer>> results_impl =
     new SimpleBeaconImpl<ArrayList<Integer>>();
@@ -69,47 +106,7 @@ public class ChildModel
   public SimpleBeaconReadable<? extends Iterable<? extends Integer>> results =
     results_impl;
 
-  private final ObjectStateEngine engine = new BeaconStateEngineAggregation(
-    new NonNullIntegerBeacon("input", input, 1)
-    {
-      @Override
-      protected Integer transform(
-        Integer value,
-        StatefulAction a)
-      {
-        if (a == next_action_impl)
-          return value + 1;
-        return value;
-      }
-
-      @Override
-      protected void postLoad()
-      {
-        Input inp = new Input();
-        message_impl.setIfNotEqual(null);
-        inp.input = input_impl.get();
-        Client.stub.serve(inp,
-          new AsyncCallback<Output>()
-          {
-            @Override
-            public void onFailure(
-              Throwable caught)
-            {
-              message_impl.setIfNotEqual(caught.getClass().getName());
-            }
-
-            @Override
-            public void onSuccess(
-              Output result)
-            {
-              if (result.errorOccurred)
-                message_impl.setIfNotEqual(result.errorMessage);
-              else
-                results_impl.setNevertheless(result.output);
-            }
-          });
-      }
-    });
+  private final ObjectStateEngine engine;
 
   @Override
   public ObjectStateEngine getObjectStateEngine()

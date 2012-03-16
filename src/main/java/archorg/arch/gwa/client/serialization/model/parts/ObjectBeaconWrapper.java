@@ -24,15 +24,19 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
 
   private final SimpleBeacon<T> beacon;
 
+  private final boolean default_is_null;
+
   public abstract T create(
     boolean for_validation_only);
 
   public ObjectBeaconWrapper(
     String beaconID,
-    SimpleBeacon<T> beacon)
+    SimpleBeacon<T> beacon,
+    boolean default_is_null)
   {
     this.beaconID = beaconID;
     this.beacon = beacon;
+    this.default_is_null = default_is_null;
   }
 
   private final BeaconStateEngine engine = new BeaconStateEngine()
@@ -68,21 +72,26 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
       if (!s.specifies(id,
         beaconID))
       {
-        // if no information is provided, reset it to the default state
-        // first, determine if the default is to be null
         if (!validate)
-          beacon.setIfNotEqual(null);
-        // and then if it is not null, ask the object to reset itself.
-        // if (beacon.isNotNull())
-        // beacon.get().getSerializableState().resetToDefault();
+        {
+          if (default_is_null)
+            beacon.setIfNotEqual(null);
+          else
+            beacon.setIfNotEqual(create(validate));
+        }
         return;
       }
       String string = s.unfold(id,
         beaconID);
-      beacon.setIfNotEqual(create(validate));
-      beacon.get().getObjectStateEngine().load(validate,
-        s,
-        string);
+      if (string == null)
+        beacon.setIfNotEqual(null);
+      else
+      {
+        beacon.setIfNotEqual(create(validate));
+        beacon.get().getObjectStateEngine().load(validate,
+          s,
+          string);
+      }
     }
   };
 

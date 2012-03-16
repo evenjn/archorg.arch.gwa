@@ -22,9 +22,6 @@ public class URIFragmentStateModel
   {
     if (s.length() == 1)
       return;
-    // throw new StateSerializationFormatException("default state");
-    if (s.length() < 2)
-      throw new StateSerializationFormatException("too short");
     s = s.substring(1);
     String[] split = s.split(re_outer);
     if (split.length == 0)

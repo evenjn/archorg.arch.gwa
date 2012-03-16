@@ -7,10 +7,14 @@ import it.celi.research.balrog.beacon.SimpleBeaconReadable;
 import it.celi.research.balrog.event.EventChannel;
 import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
+import archorg.arch.gwa.client.serialization.StatefulAction;
 import archorg.arch.gwa.client.serialization.StatefulActionImpl;
 import archorg.arch.gwa.client.serialization.Trigger;
 import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
 import archorg.arch.gwa.client.serialization.model.ObjectStateEngine;
+import archorg.arch.gwa.client.serialization.model.ReadableStateModel;
+import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
+import archorg.arch.gwa.client.serialization.model.WritableStateModel;
 import archorg.arch.gwa.client.serialization.model.parts.BeaconStateEngineAggregation;
 import archorg.arch.gwa.client.serialization.model.parts.ObjectBeaconWrapper;
 
@@ -34,7 +38,7 @@ public class RootModel
 
   // input/output only, non-transient
   private SimpleBeaconImpl<Boolean> has_child_impl =
-    new SimpleBeaconImpl<Boolean>(false);
+    new SimpleBeaconImpl<Boolean>(true);
 
   // output only, non-transient
   private SimpleBeaconImpl<ChildModel> child_impl =
@@ -72,7 +76,9 @@ public class RootModel
   {
     this.envchan = envchan;
     this.envco = envco;
-    has_child_impl.subscribe(create_child_trigger);
+    // child_impl.setNevertheless(new ChildModel(envchan, envco, message_impl,
+    // reset_message_trigger));
+    // has_child_impl.subscribe(create_child_trigger);
     has_child_impl.subscribe(reset_message_trigger);
     child_impl.subscribe(reset_message_trigger);
     has_child_impl.subscribe(envco);
@@ -99,8 +105,8 @@ public class RootModel
         return;
       if (message.getNew())
       {
-        child_impl.setNevertheless(new ChildModel(envchan, envco, message_impl,
-          reset_message_trigger));
+        child_impl.setNevertheless(new ChildModel(0, envchan, envco,
+          message_impl, reset_message_trigger));
         envchan.notify(null);
       } else
       {
@@ -121,8 +127,8 @@ public class RootModel
     }
   };
 
-  private final ObjectStateEngine engine = new BeaconStateEngineAggregation(
-    new ObjectBeaconWrapper<ChildModel>("child", child_impl)
+  private final ObjectBeaconWrapper<ChildModel> child_wrapper =
+    new ObjectBeaconWrapper<ChildModel>("child", child_impl, false)
     {
       @Override
       public ChildModel create(
@@ -131,14 +137,72 @@ public class RootModel
         if (dryrun)
         {
           ChildModel childModel =
-            new ChildModel(null, null, message_impl, null);
+            new ChildModel(0, null, null, message_impl, null);
           return childModel;
         }
         ChildModel childModel =
-          new ChildModel(envchan, envco, message_impl, reset_message_trigger);
+          new ChildModel(0, envchan, envco, message_impl, reset_message_trigger);
         return childModel;
       }
-    })
+    };
+
+  private final ObjectStateEngine engine2 = new ObjectStateEngine()
+  {
+    @Override
+    public void load(
+      boolean validate,
+      ReadableStateModel s,
+      String id) throws StateSerializationFormatException
+    {
+      child_wrapper.getBeaconStateEngine().load(validate,
+        s,
+        id);
+    }
+
+    @Override
+    public void postLoad()
+    {
+      child_wrapper.getBeaconStateEngine().postLoad();
+      if (child_impl.isNotNull())
+        has_child_impl.setIfNotEqual(true);
+      else
+        has_child_impl.setIfNotEqual(false);
+      message_impl.setIfNotEqual(null);
+    }
+
+    @Override
+    public String dump(
+      WritableStateModel s,
+      StatefulAction a)
+    {
+      String id = s.getID();
+      if (a == child_action)
+      {
+        if (child_impl.isNull())
+          return id;
+        s.fold(id,
+          "child",
+          null);
+        // opposite of this!
+        // if (child_impl.isNotNull())
+        // return id;
+        // ChildModel childModel =
+        // new ChildModel(0, null, null, message_impl, null);
+        // String vid = childModel.getObjectStateEngine().dump(s,
+        // a);
+        // s.fold(id,
+        // "child",
+        // vid);
+      } else
+        child_wrapper.getBeaconStateEngine().dump(s,
+          id,
+          a);
+      return id;
+    }
+  };
+
+  private final ObjectStateEngine engine = new BeaconStateEngineAggregation(
+    child_wrapper)
   {
     @Override
     public void postLoad()
@@ -155,6 +219,6 @@ public class RootModel
   @Override
   public ObjectStateEngine getObjectStateEngine()
   {
-    return engine;
+    return engine2;
   }
 }

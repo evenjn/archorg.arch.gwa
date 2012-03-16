@@ -5,7 +5,6 @@ import it.celi.research.balrog.beacon.SimpleBeaconReadable;
 import it.celi.research.balrog.event.EventChannel;
 import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
-
 import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
 import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
 
@@ -48,16 +47,18 @@ public class StateManager
     HasObjectStateEngine root)
   {
     this.root = root;
-    String token = History.getToken();
-    if (token.length() != 0)
-      load(token);
-    environment_change.notify(null);
+    // environment_change.notify(null);
   }
 
   private void load(
     String historyToken)
   {
     String encoded = URL.decodeQueryString(historyToken);
+    if (encoded.isEmpty())
+    {
+      // if the token is empty, behave as if the token was a reset token.
+      encoded = "!";
+    }
     if (!encoded.startsWith("!"))
       // this is a regular link
       return;
