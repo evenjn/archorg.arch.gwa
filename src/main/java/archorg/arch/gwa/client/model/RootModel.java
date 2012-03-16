@@ -7,13 +7,13 @@ import it.celi.research.balrog.beacon.SimpleBeaconReadable;
 import it.celi.research.balrog.event.EventChannel;
 import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
-import archorg.arch.gwa.client.serialization.StatefulAction;
 import archorg.arch.gwa.client.serialization.StatefulActionImpl;
 import archorg.arch.gwa.client.serialization.Trigger;
 import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
 import archorg.arch.gwa.client.serialization.model.ObjectStateEngine;
 import archorg.arch.gwa.client.serialization.model.ReadableStateModel;
 import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
+import archorg.arch.gwa.client.serialization.model.Transition;
 import archorg.arch.gwa.client.serialization.model.WritableStateModel;
 import archorg.arch.gwa.client.serialization.model.parts.BeaconStateEngineAggregation;
 import archorg.arch.gwa.client.serialization.model.parts.ObjectBeaconWrapper;
@@ -66,7 +66,7 @@ public class RootModel
     return child_impl;
   }
 
-  private final StatefulActionImpl child_action = new StatefulActionImpl();
+  private final Transition child_action = new Transition();
 
   private final EventChannel<Void> envchan;
 
@@ -82,6 +82,8 @@ public class RootModel
     has_child_impl.subscribe(reset_message_trigger);
     child_impl.subscribe(reset_message_trigger);
     has_child_impl.subscribe(envco);
+    final StatefulActionImpl child_action =
+      new StatefulActionImpl(this.child_action);
     has_child_impl.subscribe(new Observer<Object>()
     {
       @Override
@@ -173,7 +175,7 @@ public class RootModel
     @Override
     public String dump(
       WritableStateModel s,
-      StatefulAction a)
+      Transition a)
     {
       String id = s.getID();
       if (a == child_action)

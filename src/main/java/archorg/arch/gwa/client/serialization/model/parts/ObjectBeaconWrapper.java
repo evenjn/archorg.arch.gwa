@@ -1,21 +1,14 @@
 package archorg.arch.gwa.client.serialization.model.parts;
 
 import it.celi.research.balrog.beacon.SimpleBeacon;
-import archorg.arch.gwa.client.serialization.StatefulAction;
 import archorg.arch.gwa.client.serialization.model.BeaconStateEngine;
 import archorg.arch.gwa.client.serialization.model.HasBeaconStateEngine;
 import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
 import archorg.arch.gwa.client.serialization.model.ReadableStateModel;
 import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
+import archorg.arch.gwa.client.serialization.model.Transition;
 import archorg.arch.gwa.client.serialization.model.WritableStateModel;
 
-/**
- * The default can only be null
- * 
- * @author evenjn
- * 
- * @param <T>
- */
 public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
   implements
   HasBeaconStateEngine
@@ -39,21 +32,70 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
     this.default_is_null = default_is_null;
   }
 
+  public final static Transition SETNULL = new Transition();
+
+  public final static Transition SETDEFAULT = new Transition();
+
+  public final static Transition TOGGLENULLDEFAULT = new Transition();
+
   private final BeaconStateEngine engine = new BeaconStateEngine()
   {
     @Override
     public void dump(
       WritableStateModel s,
       String container_id,
-      StatefulAction a)
+      Transition a)
     {
-      if (beacon.isNull())
+      if (a == TOGGLENULLDEFAULT)
+      {
+        if (beacon.isNull())
+        {
+          String vid = create(true).getObjectStateEngine().dump(s,
+            a);
+          s.fold(container_id,
+            beaconID,
+            vid);
+        } else
+        {
+          s.fold(container_id,
+            beaconID,
+            null);
+        }
         return;
-      String vid = beacon.get().getObjectStateEngine().dump(s,
-        a);
-      s.fold(container_id,
-        beaconID,
-        vid);
+      }
+      if (a == SETNULL)
+      {
+        s.fold(container_id,
+          beaconID,
+          null);
+        return;
+      }
+      if (a == SETDEFAULT)
+      {
+        String vid = create(true).getObjectStateEngine().dump(s,
+          a);
+        s.fold(container_id,
+          beaconID,
+          vid);
+        return;
+      }
+      if (beacon.isNull())
+      {
+        if (!default_is_null)
+        {
+          s.fold(container_id,
+            beaconID,
+            null);
+        }
+        return;
+      } else
+      {
+        String vid = beacon.get().getObjectStateEngine().dump(s,
+          a);
+        s.fold(container_id,
+          beaconID,
+          vid);
+      }
     }
 
     @Override

@@ -15,6 +15,7 @@ import archorg.arch.gwa.client.serialization.StatefulActionImpl;
 import archorg.arch.gwa.client.serialization.Trigger;
 import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
 import archorg.arch.gwa.client.serialization.model.ObjectStateEngine;
+import archorg.arch.gwa.client.serialization.model.Transition;
 import archorg.arch.gwa.client.serialization.model.parts.BeaconStateEngineAggregation;
 import archorg.arch.gwa.shared.Input;
 import archorg.arch.gwa.shared.Output;
@@ -47,16 +48,18 @@ public class ChildModel
         @Override
         protected Integer transform(
           Integer value,
-          StatefulAction a)
+          Transition a)
         {
           if (a == next_action_impl)
             return value + 1;
           return value;
         }
-
+      })
+      {
         @Override
-        protected void postLoad()
+        public void postLoad()
         {
+          super.postLoad();
           Input inp = new Input();
           message_impl.setIfNotEqual(null);
           inp.input = input.get();
@@ -81,21 +84,21 @@ public class ChildModel
               }
             });
         }
-      });
+      };
   }
 
-  private final StatefulActionImpl action_impl = new StatefulActionImpl();
+  private final Transition action_impl = new Transition();
 
   public StatefulAction getActionCurrent()
   {
-    return action_impl;
+    return new StatefulActionImpl(action_impl);
   }
 
-  private final StatefulActionImpl next_action_impl = new StatefulActionImpl();
+  private final Transition next_action_impl = new Transition();
 
   public StatefulAction getActionNext()
   {
-    return next_action_impl;
+    return new StatefulActionImpl(next_action_impl);
   }
 
   public final SimpleBeacon<Integer> input;

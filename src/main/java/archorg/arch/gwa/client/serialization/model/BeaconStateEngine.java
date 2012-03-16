@@ -1,6 +1,5 @@
 package archorg.arch.gwa.client.serialization.model;
 
-import archorg.arch.gwa.client.serialization.StatefulAction;
 
 public interface BeaconStateEngine
   extends
@@ -9,5 +8,5 @@ public interface BeaconStateEngine
   void dump(
     WritableStateModel s,
     String container_id,
-    StatefulAction a);
+    Transition a);
 }

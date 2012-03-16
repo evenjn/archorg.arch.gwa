@@ -1,6 +1,5 @@
 package archorg.arch.gwa.client.serialization.model;
 
-import archorg.arch.gwa.client.serialization.StatefulAction;
 
 public interface ObjectStateEngine
   extends
@@ -8,5 +7,5 @@ public interface ObjectStateEngine
 {
   String dump(
     WritableStateModel s,
-    StatefulAction a);
+    Transition a);
 }

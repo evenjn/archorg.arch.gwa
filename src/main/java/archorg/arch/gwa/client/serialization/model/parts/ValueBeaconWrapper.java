@@ -1,11 +1,11 @@
 package archorg.arch.gwa.client.serialization.model.parts;
 
 import it.celi.research.balrog.beacon.SimpleBeacon;
-import archorg.arch.gwa.client.serialization.StatefulAction;
 import archorg.arch.gwa.client.serialization.model.BeaconStateEngine;
 import archorg.arch.gwa.client.serialization.model.HasBeaconStateEngine;
 import archorg.arch.gwa.client.serialization.model.ReadableStateModel;
 import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
+import archorg.arch.gwa.client.serialization.model.Transition;
 import archorg.arch.gwa.client.serialization.model.WritableStateModel;
 
 public abstract class ValueBeaconWrapper<T>
@@ -36,9 +36,7 @@ public abstract class ValueBeaconWrapper<T>
 
   protected abstract T transform(
     T value,
-    StatefulAction a);
-
-  protected abstract void postLoad();
+    Transition a);
 
   private final BeaconStateEngine engine = new BeaconStateEngine()
   {
@@ -46,7 +44,7 @@ public abstract class ValueBeaconWrapper<T>
     public void dump(
       WritableStateModel s,
       String container_id,
-      StatefulAction a)
+      Transition a)
     {
       T transformed = transform(beacon.get(),
         a);
@@ -63,9 +61,7 @@ public abstract class ValueBeaconWrapper<T>
 
     @Override
     public void postLoad()
-    {
-      ValueBeaconWrapper.this.postLoad();
-    }
+    {}
 
     @Override
     public void load(

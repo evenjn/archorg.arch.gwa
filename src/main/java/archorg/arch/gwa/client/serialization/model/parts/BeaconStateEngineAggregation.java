@@ -2,11 +2,11 @@ package archorg.arch.gwa.client.serialization.model.parts;
 
 import java.util.ArrayList;
 
-import archorg.arch.gwa.client.serialization.StatefulAction;
 import archorg.arch.gwa.client.serialization.model.HasBeaconStateEngine;
 import archorg.arch.gwa.client.serialization.model.ObjectStateEngine;
 import archorg.arch.gwa.client.serialization.model.ReadableStateModel;
 import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
+import archorg.arch.gwa.client.serialization.model.Transition;
 import archorg.arch.gwa.client.serialization.model.WritableStateModel;
 
 public class BeaconStateEngineAggregation
@@ -45,7 +45,7 @@ public class BeaconStateEngineAggregation
   @Override
   public String dump(
     WritableStateModel s,
-    StatefulAction a)
+    Transition a)
   {
     String id = s.getID();
     for (HasBeaconStateEngine bs : ios)

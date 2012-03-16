@@ -7,6 +7,7 @@ import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
 import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
 import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
+import archorg.arch.gwa.client.serialization.model.Transition;
 
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -85,7 +86,7 @@ public class StateManager
   }
 
   public SimpleBeaconReadable<String> createActionBeacon(
-    final StatefulAction sa)
+    final Transition sa)
   {
     final SimpleBeaconImpl<String> next_state =
       new SimpleBeaconImpl<String>("initializing");
@@ -107,12 +108,12 @@ public class StateManager
    * Stores the current state of the application in the URL.
    */
   public String serialize(
-    StatefulAction a)
+    Transition transition)
   {
     if (root == null)
       throw new IllegalStateException("Root has not been set yet.");
     return factory.dump(root,
-      a);
+      transition);
   }
 
   public void store(

@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import archorg.arch.gwa.client.serialization.StatefulAction;
-
 public class StateModelImpl
   implements
   ReadableStateModel,
@@ -25,7 +23,7 @@ public class StateModelImpl
 
   public void dump(
     HasObjectStateEngine s,
-    StatefulAction a)
+    Transition a)
   {
     ObjectStateEngine serializableState = s.getObjectStateEngine();
     serializableState.dump(this,

@@ -1,10 +1,10 @@
 package archorg.arch.gwa.client.serialization.model.uri;
 
 import archorg.arch.gwa.client.serialization.StateModelFactory;
-import archorg.arch.gwa.client.serialization.StatefulAction;
 import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
 import archorg.arch.gwa.client.serialization.model.StateModelImpl;
 import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
+import archorg.arch.gwa.client.serialization.model.Transition;
 
 public class URIStateModelFactory
   implements
@@ -13,7 +13,7 @@ public class URIStateModelFactory
   @Override
   public String dump(
     HasObjectStateEngine state,
-    StatefulAction a)
+    Transition a)
   {
     StateModelImpl si = new URIFragmentStateModel();
     si.dump(state,

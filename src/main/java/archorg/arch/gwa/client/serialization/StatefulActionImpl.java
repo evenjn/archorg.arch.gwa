@@ -4,6 +4,7 @@ import it.celi.research.balrog.beacon.SimpleBeaconImpl;
 import it.celi.research.balrog.beacon.SimpleBeaconReadable;
 import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
+import archorg.arch.gwa.client.serialization.model.Transition;
 
 public class StatefulActionImpl
   implements
@@ -19,7 +20,8 @@ public class StatefulActionImpl
 
   private final SimpleBeaconImpl<String> next_state;
 
-  public StatefulActionImpl()
+  public StatefulActionImpl(
+    final Transition transition)
   {
     next_state = new SimpleBeaconImpl<String>("initializing");
     Observer<Void> observer = new Observer<Void>()
@@ -29,8 +31,7 @@ public class StatefulActionImpl
         Observable<? extends Void> observable,
         Void message)
       {
-        next_state.setNevertheless(statemanager
-          .serialize(StatefulActionImpl.this));
+        next_state.setNevertheless(statemanager.serialize(transition));
       }
     };
     statemanager.getEnvironmentChangeChannel().subscribe(observer);
