@@ -85,7 +85,15 @@ public abstract class ValueBeaconWrapper<T>
 
     @Override
     public void link()
-    {}
+    {
+      // nothing to link
+    }
+
+    @Override
+    public void unlink()
+    {
+      // nothing to unlink
+    }
   };
 
   @Override

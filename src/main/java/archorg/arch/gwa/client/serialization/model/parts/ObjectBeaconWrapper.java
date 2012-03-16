@@ -74,11 +74,19 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
       }
       if (a == SETDEFAULT)
       {
-        String vid = getAutonomousEngine().dump(s,
-          a);
-        s.fold(container_id,
-          beaconID,
-          vid);
+        if (default_is_null)
+        {
+          s.fold(container_id,
+            beaconID,
+            null);
+        } else
+        {
+          String vid = getAutonomousEngine().dump(s,
+            a);
+          s.fold(container_id,
+            beaconID,
+            vid);
+        }
         return;
       }
       if (beacon.isNull())
@@ -113,14 +121,18 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
       ReadableStateModel s,
       String id) throws StateSerializationFormatException
     {
+      if (!validate)
+        if (beacon.isNotNull())
+          beacon.get().getObjectStateEngine().unlink();
       if (!s.specifies(id,
         beaconID))
       {
         if (!validate)
         {
           if (default_is_null)
+          {
             beacon.setIfNotEqual(null);
-          else
+          } else
             beacon.setIfNotEqual(create());
         }
         return;
@@ -136,13 +148,13 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
         if (!validate)
         {
           T created = create();
-          created.getObjectStateEngine().load(validate,
+          created.getObjectStateEngine().load(false,
             s,
             string);
           beacon.setIfNotEqual(created);
         } else
         {
-          getAutonomousEngine().load(validate,
+          getAutonomousEngine().load(false,
             s,
             string);
         }
@@ -154,6 +166,13 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
     {
       if (beacon.isNotNull())
         beacon.get().getObjectStateEngine().link();
+    }
+
+    @Override
+    public void unlink()
+    {
+      if (beacon.isNotNull())
+        beacon.get().getObjectStateEngine().unlink();
     }
   };
 

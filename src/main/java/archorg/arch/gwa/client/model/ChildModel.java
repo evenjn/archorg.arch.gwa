@@ -61,6 +61,13 @@ public class ChildModel
           input.subscribe(envco);
         }
 
+        public void unlink()
+        {
+          super.unlink();
+          input.unsubscribe(reset_message);
+          input.unsubscribe(envco);
+        }
+
         @Override
         public void postLoad()
         {

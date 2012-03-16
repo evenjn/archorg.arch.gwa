@@ -9,5 +9,7 @@ public interface StateLoader
 
   void link();
 
+  void unlink();
+
   void postLoad();
 }
