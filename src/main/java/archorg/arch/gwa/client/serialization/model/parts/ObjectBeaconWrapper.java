@@ -4,7 +4,6 @@ import it.celi.research.balrog.beacon.SimpleBeacon;
 import archorg.arch.gwa.client.serialization.model.BeaconStateEngine;
 import archorg.arch.gwa.client.serialization.model.HasBeaconStateEngine;
 import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
-import archorg.arch.gwa.client.serialization.model.ObjectStateEngine;
 import archorg.arch.gwa.client.serialization.model.ReadableStateModel;
 import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
 import archorg.arch.gwa.client.serialization.model.Transition;
@@ -19,8 +18,6 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
   private final SimpleBeacon<T> beacon;
 
   private final boolean default_is_null;
-
-  protected abstract ObjectStateEngine getAutonomousEngine();
 
   public abstract T create();
 
@@ -52,7 +49,7 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
       {
         if (beacon.isNull())
         {
-          String vid = getAutonomousEngine().dump(s,
+          String vid = create().getObjectStateEngine().dump(s,
             a);
           s.fold(container_id,
             beaconID,
@@ -81,7 +78,7 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
             null);
         } else
         {
-          String vid = getAutonomousEngine().dump(s,
+          String vid = create().getObjectStateEngine().dump(s,
             a);
           s.fold(container_id,
             beaconID,
@@ -121,43 +118,81 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
       ReadableStateModel s,
       String id) throws StateSerializationFormatException
     {
-      if (!validate)
-        if (beacon.isNotNull())
-          beacon.get().getObjectStateEngine().unlink();
       if (!s.specifies(id,
         beaconID))
       {
-        if (!validate)
+        if (validate)
         {
-          if (default_is_null)
-          {
-            beacon.setIfNotEqual(null);
-          } else
-            beacon.setIfNotEqual(create());
+          // if this invocation is for validation of the serialization, then
+          // this system does not
+          // have anything to validate, because the serialization is empty here.
+          return;
         }
+        // this is real loading and nothing to load. it's a reset!
+        if (default_is_null)
+        {
+          // it's a reset to null
+          if (beacon.isNotNull())
+            // detaches all observers contained in this object
+            beacon.get().getObjectStateEngine().unlink();
+          beacon.setIfNotEqual(null);
+          return;
+        }
+        if (beacon.isNull())
+          beacon.setIfNotEqual(create());
+        // this system asks the object in the beacon to load an empty state,
+        // it's a reset!
+        beacon.get().getObjectStateEngine().load(validate,
+          s,
+          id);
         return;
       }
       String string = s.unfold(id,
         beaconID);
       if (string == null)
       {
-        if (!validate)
-          beacon.setIfNotEqual(null);
-      } else
-      {
-        if (!validate)
+        if (validate)
         {
-          T created = create();
-          created.getObjectStateEngine().load(false,
-            s,
-            string);
-          beacon.setIfNotEqual(created);
+          // nothing to validate.
+          return;
+        }
+        // it's a set to null
+        if (beacon.isNotNull())
+          // detaches all observers contained in this object
+          beacon.get().getObjectStateEngine().unlink();
+        beacon.setIfNotEqual(null);
+        return;
+      }
+      // it's a real string.
+      if (validate)
+      {
+        T t;
+        if (beacon.isNull())
+        {
+          t = create();
         } else
         {
-          getAutonomousEngine().load(false,
-            s,
-            string);
+          t = beacon.get();
         }
+        t.getObjectStateEngine().load(true,
+          s,
+          string);
+      }
+      if (!validate)
+      {
+        T t;
+        if (beacon.isNull())
+        {
+          t = create();
+          beacon.setIfNotEqual(t);
+        } else
+        {
+          t = beacon.get();
+        }
+        t.getObjectStateEngine().load(false,
+          s,
+          string);
+        return;
       }
     }
 

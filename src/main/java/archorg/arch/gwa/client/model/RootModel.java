@@ -115,12 +115,6 @@ public class RootModel
           new ChildModel(0, envchan, envco, message_impl, reset_message_trigger);
         return childModel;
       }
-
-      @Override
-      public ObjectStateEngine getAutonomousEngine()
-      {
-        return create().getObjectStateEngine();
-      }
     };
 
   private final ObjectStateEngine engine2 = new BeaconStateEngineAggregation(
