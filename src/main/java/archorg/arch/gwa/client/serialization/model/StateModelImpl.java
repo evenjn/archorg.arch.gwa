@@ -18,6 +18,7 @@ public class StateModelImpl
     root.getObjectStateEngine().load(false,
       this,
       "0");
+    root.getObjectStateEngine().link();
     root.getObjectStateEngine().postLoad();
   }
 

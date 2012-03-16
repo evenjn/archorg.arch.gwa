@@ -56,4 +56,11 @@ public class BeaconStateEngineAggregation
     }
     return id;
   }
+
+  @Override
+  public void link()
+  {
+    for (HasBeaconStateEngine bs : ios)
+      bs.getBeaconStateEngine().link();
+  }
 }

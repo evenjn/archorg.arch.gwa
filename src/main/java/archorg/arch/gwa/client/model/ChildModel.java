@@ -26,21 +26,14 @@ public class ChildModel
   implements
   HasObjectStateEngine
 {
-  // private final EventChannel<Void> envchan;
   public ChildModel(
     final int default_value,
-    EventChannel<Void> envchan,
-    Observer<? super Object> envco,
+    final EventChannel<Void> envchan,
+    final Observer<? super Object> envco,
     final SimpleBeacon<String> message_impl,
-    Trigger<Object> reset_message)
+    final Trigger<Object> reset_message)
   {
     input = new SimpleBeaconImpl<Integer>(default_value);
-    if (reset_message != null)
-      input.subscribe(reset_message);
-    if (envco != null)
-    {
-      input.subscribe(envco);
-    }
     engine =
       new BeaconStateEngineAggregation(new NonNullIntegerBeacon("input", input,
         default_value)
@@ -56,6 +49,18 @@ public class ChildModel
         }
       })
       {
+        boolean linked = false;
+
+        public void link()
+        {
+          super.link();
+          if (linked)
+            return;
+          linked = true;
+          input.subscribe(reset_message);
+          input.subscribe(envco);
+        }
+
         @Override
         public void postLoad()
         {

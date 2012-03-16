@@ -11,10 +11,6 @@ import archorg.arch.gwa.client.serialization.StatefulActionImpl;
 import archorg.arch.gwa.client.serialization.Trigger;
 import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
 import archorg.arch.gwa.client.serialization.model.ObjectStateEngine;
-import archorg.arch.gwa.client.serialization.model.ReadableStateModel;
-import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
-import archorg.arch.gwa.client.serialization.model.Transition;
-import archorg.arch.gwa.client.serialization.model.WritableStateModel;
 import archorg.arch.gwa.client.serialization.model.parts.BeaconStateEngineAggregation;
 import archorg.arch.gwa.client.serialization.model.parts.ObjectBeaconWrapper;
 
@@ -44,8 +40,6 @@ public class RootModel
   private SimpleBeaconImpl<ChildModel> child_impl =
     new SimpleBeaconImpl<ChildModel>();
 
-  private final Observer<? super Object> envco;
-
   public SimpleBeacon<? super String> getMessageBW()
   {
     return message_impl;
@@ -66,9 +60,9 @@ public class RootModel
     return child_impl;
   }
 
-  private final Transition child_action = new Transition();
-
   private final EventChannel<Void> envchan;
+
+  private final Observer<? super Object> envco;
 
   public RootModel(
     EventChannel<Void> envchan,
@@ -76,24 +70,6 @@ public class RootModel
   {
     this.envchan = envchan;
     this.envco = envco;
-    // child_impl.setNevertheless(new ChildModel(envchan, envco, message_impl,
-    // reset_message_trigger));
-    // has_child_impl.subscribe(create_child_trigger);
-    has_child_impl.subscribe(reset_message_trigger);
-    child_impl.subscribe(reset_message_trigger);
-    has_child_impl.subscribe(envco);
-    final StatefulActionImpl child_action =
-      new StatefulActionImpl(this.child_action);
-    has_child_impl.subscribe(new Observer<Object>()
-    {
-      @Override
-      public void notice(
-        Observable<? extends Object> observable,
-        Object message)
-      {
-        child_action.execute();
-      }
-    });
   }
 
   private Trigger<Boolean> create_child_trigger = new Trigger<Boolean>()
@@ -133,34 +109,23 @@ public class RootModel
     new ObjectBeaconWrapper<ChildModel>("child", child_impl, false)
     {
       @Override
-      public ChildModel create(
-        boolean dryrun)
+      public ChildModel create()
       {
-        if (dryrun)
-        {
-          ChildModel childModel =
-            new ChildModel(0, null, null, message_impl, null);
-          return childModel;
-        }
         ChildModel childModel =
           new ChildModel(0, envchan, envco, message_impl, reset_message_trigger);
         return childModel;
       }
+
+      @Override
+      public ObjectStateEngine getAutonomousEngine()
+      {
+        return create().getObjectStateEngine();
+      }
     };
 
-  private final ObjectStateEngine engine2 = new ObjectStateEngine()
+  private final ObjectStateEngine engine2 = new BeaconStateEngineAggregation(
+    child_wrapper)
   {
-    @Override
-    public void load(
-      boolean validate,
-      ReadableStateModel s,
-      String id) throws StateSerializationFormatException
-    {
-      child_wrapper.getBeaconStateEngine().load(validate,
-        s,
-        id);
-    }
-
     @Override
     public void postLoad()
     {
@@ -172,34 +137,33 @@ public class RootModel
       message_impl.setIfNotEqual(null);
     }
 
+    private boolean linked = false;
+
     @Override
-    public String dump(
-      WritableStateModel s,
-      Transition a)
+    public void link()
     {
-      String id = s.getID();
-      if (a == child_action)
+      super.link();
+      if (linked)
+        return;
+      linked = true;
+      // child_impl.setNevertheless(new ChildModel(envchan, envco, message_impl,
+      // reset_message_trigger));
+      // has_child_impl.subscribe(create_child_trigger);
+      has_child_impl.subscribe(reset_message_trigger);
+      child_impl.subscribe(reset_message_trigger);
+      has_child_impl.subscribe(envco);
+      final StatefulActionImpl zchild_action =
+        new StatefulActionImpl(child_wrapper.TOGGLENULLDEFAULT);
+      has_child_impl.subscribe(new Observer<Object>()
       {
-        if (child_impl.isNull())
-          return id;
-        s.fold(id,
-          "child",
-          null);
-        // opposite of this!
-        // if (child_impl.isNotNull())
-        // return id;
-        // ChildModel childModel =
-        // new ChildModel(0, null, null, message_impl, null);
-        // String vid = childModel.getObjectStateEngine().dump(s,
-        // a);
-        // s.fold(id,
-        // "child",
-        // vid);
-      } else
-        child_wrapper.getBeaconStateEngine().dump(s,
-          id,
-          a);
-      return id;
+        @Override
+        public void notice(
+          Observable<? extends Object> observable,
+          Object message)
+        {
+          zchild_action.execute();
+        }
+      });
     }
   };
 

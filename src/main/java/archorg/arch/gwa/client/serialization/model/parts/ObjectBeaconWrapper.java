@@ -4,6 +4,7 @@ import it.celi.research.balrog.beacon.SimpleBeacon;
 import archorg.arch.gwa.client.serialization.model.BeaconStateEngine;
 import archorg.arch.gwa.client.serialization.model.HasBeaconStateEngine;
 import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
+import archorg.arch.gwa.client.serialization.model.ObjectStateEngine;
 import archorg.arch.gwa.client.serialization.model.ReadableStateModel;
 import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
 import archorg.arch.gwa.client.serialization.model.Transition;
@@ -19,8 +20,9 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
 
   private final boolean default_is_null;
 
-  public abstract T create(
-    boolean for_validation_only);
+  protected abstract ObjectStateEngine getAutonomousEngine();
+
+  public abstract T create();
 
   public ObjectBeaconWrapper(
     String beaconID,
@@ -32,11 +34,11 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
     this.default_is_null = default_is_null;
   }
 
-  public final static Transition SETNULL = new Transition();
+  public final Transition SETNULL = new Transition();
 
-  public final static Transition SETDEFAULT = new Transition();
+  public final Transition SETDEFAULT = new Transition();
 
-  public final static Transition TOGGLENULLDEFAULT = new Transition();
+  public final Transition TOGGLENULLDEFAULT = new Transition();
 
   private final BeaconStateEngine engine = new BeaconStateEngine()
   {
@@ -50,7 +52,7 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
       {
         if (beacon.isNull())
         {
-          String vid = create(true).getObjectStateEngine().dump(s,
+          String vid = getAutonomousEngine().dump(s,
             a);
           s.fold(container_id,
             beaconID,
@@ -72,7 +74,7 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
       }
       if (a == SETDEFAULT)
       {
-        String vid = create(true).getObjectStateEngine().dump(s,
+        String vid = getAutonomousEngine().dump(s,
           a);
         s.fold(container_id,
           beaconID,
@@ -119,21 +121,39 @@ public abstract class ObjectBeaconWrapper<T extends HasObjectStateEngine>
           if (default_is_null)
             beacon.setIfNotEqual(null);
           else
-            beacon.setIfNotEqual(create(validate));
+            beacon.setIfNotEqual(create());
         }
         return;
       }
       String string = s.unfold(id,
         beaconID);
       if (string == null)
-        beacon.setIfNotEqual(null);
-      else
       {
-        beacon.setIfNotEqual(create(validate));
-        beacon.get().getObjectStateEngine().load(validate,
-          s,
-          string);
+        if (!validate)
+          beacon.setIfNotEqual(null);
+      } else
+      {
+        if (!validate)
+        {
+          T created = create();
+          created.getObjectStateEngine().load(validate,
+            s,
+            string);
+          beacon.setIfNotEqual(created);
+        } else
+        {
+          getAutonomousEngine().load(validate,
+            s,
+            string);
+        }
       }
+    }
+
+    @Override
+    public void link()
+    {
+      if (beacon.isNotNull())
+        beacon.get().getObjectStateEngine().link();
     }
   };
 

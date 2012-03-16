@@ -31,6 +31,7 @@ public class Client
     final RootModel rm =
       new RootModel(sm.getEnvironmentChangeChannel(),
         sm.getEnvironmentChangeObserver());
+    rm.getObjectStateEngine().link();
     sm.setRoot(rm);
     // after the model is built, we synchronize all links
     sm.getEnvironmentChangeChannel().notify(null);

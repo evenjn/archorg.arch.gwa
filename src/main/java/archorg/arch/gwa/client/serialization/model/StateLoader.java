@@ -7,5 +7,7 @@ public interface StateLoader
     ReadableStateModel s,
     String id) throws StateSerializationFormatException;
 
+  void link();
+
   void postLoad();
 }

@@ -78,8 +78,14 @@ public abstract class ValueBeaconWrapper<T>
       }
       String string = s.unfold(id,
         beaconID);
-      beacon.setIfNotEqual(decode(string));
+      T decoded = decode(string);
+      if (!validate)
+        beacon.setIfNotEqual(decoded);
     }
+
+    @Override
+    public void link()
+    {}
   };
 
   @Override
