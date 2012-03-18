@@ -2,10 +2,10 @@ package archorg.arch.gwa.client.serialization.model;
 
 public interface WritableStateModel
 {
-  void fold(
-    String id,
-    String part,
-    String value);
+  void storeValueForPart(
+    String elementId,
+    String partId,
+    String serializedValue);
 
   String getID();
 }

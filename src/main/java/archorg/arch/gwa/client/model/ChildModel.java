@@ -10,13 +10,13 @@ import java.util.ArrayList;
 
 import archorg.arch.gwa.client.Client;
 import archorg.arch.gwa.client.beacon.NonNullIntegerBeacon;
-import archorg.arch.gwa.client.serialization.StatefulAction;
-import archorg.arch.gwa.client.serialization.StatefulActionImpl;
+import archorg.arch.gwa.client.serialization.StateTransitionAction;
+import archorg.arch.gwa.client.serialization.StateTransitionActionImpl;
 import archorg.arch.gwa.client.serialization.Trigger;
-import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
-import archorg.arch.gwa.client.serialization.model.ObjectStateEngine;
+import archorg.arch.gwa.client.serialization.model.HasSerializationEngine;
+import archorg.arch.gwa.client.serialization.model.SerializationEngine;
 import archorg.arch.gwa.client.serialization.model.Transition;
-import archorg.arch.gwa.client.serialization.model.parts.BeaconStateEngineAggregation;
+import archorg.arch.gwa.client.serialization.model.parts.CompositeSerializationEngine;
 import archorg.arch.gwa.shared.Input;
 import archorg.arch.gwa.shared.Output;
 
@@ -24,7 +24,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class ChildModel
   implements
-  HasObjectStateEngine
+  HasSerializationEngine
 {
   public ChildModel(
     final int default_value,
@@ -35,7 +35,7 @@ public class ChildModel
   {
     input = new SimpleBeaconImpl<Integer>(default_value);
     engine =
-      new BeaconStateEngineAggregation(new NonNullIntegerBeacon("input", input,
+      new CompositeSerializationEngine(new NonNullIntegerBeacon("input", input,
         default_value)
       {
         @Override
@@ -51,9 +51,9 @@ public class ChildModel
       {
         boolean linked = false;
 
-        public void link()
+        public void connectToEnvironment()
         {
-          super.link();
+          super.connectToEnvironment();
           if (linked)
             return;
           linked = true;
@@ -61,9 +61,9 @@ public class ChildModel
           input.subscribe(envco);
         }
 
-        public void unlink()
+        public void disconnectFromEnvironment()
         {
-          super.unlink();
+          super.disconnectFromEnvironment();
           input.unsubscribe(reset_message);
           input.unsubscribe(envco);
         }
@@ -101,16 +101,16 @@ public class ChildModel
 
   private final Transition action_impl = new Transition();
 
-  public StatefulAction getActionCurrent()
+  public StateTransitionAction getActionCurrent()
   {
-    return new StatefulActionImpl(action_impl);
+    return new StateTransitionActionImpl(action_impl);
   }
 
   private final Transition next_action_impl = new Transition();
 
-  public StatefulAction getActionNext()
+  public StateTransitionAction getActionNext()
   {
-    return new StatefulActionImpl(next_action_impl);
+    return new StateTransitionActionImpl(next_action_impl);
   }
 
   public final SimpleBeacon<Integer> input;
@@ -121,10 +121,10 @@ public class ChildModel
   public SimpleBeaconReadable<? extends Iterable<? extends Integer>> results =
     results_impl;
 
-  private final ObjectStateEngine engine;
+  private final SerializationEngine engine;
 
   @Override
-  public ObjectStateEngine getObjectStateEngine()
+  public SerializationEngine getSerializationEngine()
   {
     return engine;
   }

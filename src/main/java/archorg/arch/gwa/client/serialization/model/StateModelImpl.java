@@ -9,26 +9,26 @@ public class StateModelImpl
   ReadableStateModel,
   WritableStateModel
 {
-  public void load(
-    HasObjectStateEngine root) throws StateSerializationFormatException
+  public void injectStateInto(
+    HasSerializationEngine elementWithStateEngine) throws SerializationException
   {
-    root.getObjectStateEngine().load(true,
+    elementWithStateEngine.getSerializationEngine().loadState(true,
       this,
       "0");
-    root.getObjectStateEngine().load(false,
+    elementWithStateEngine.getSerializationEngine().loadState(false,
       this,
       "0");
-    root.getObjectStateEngine().link();
-    root.getObjectStateEngine().postLoad();
+    elementWithStateEngine.getSerializationEngine().connectToEnvironment();
+    elementWithStateEngine.getSerializationEngine().postLoad();
   }
 
-  public void dump(
-    HasObjectStateEngine s,
-    Transition a)
+  public void readNextStateFrom(
+    HasSerializationEngine elementWithStateEngine,
+    Transition transition)
   {
-    ObjectStateEngine serializableState = s.getObjectStateEngine();
-    serializableState.dump(this,
-      a);
+    SerializationEngine serializableState = elementWithStateEngine.getSerializationEngine();
+    serializableState.writeDestinationState(this,
+      transition);
   }
 
   protected int sequence = 0;
@@ -39,31 +39,45 @@ public class StateModelImpl
     new HashMap<String, Map<String, String>>();
 
   @Override
-  public boolean specifies(
+  public boolean hasValueForPart(
     String elementId,
-    String part) throws StateSerializationFormatException
+    String partId) throws SerializationException
   {
     Map<String, String> map = map_s.get(elementId);
     if (map == null)
       return false;
-    return map.containsKey(part);
+    return map.containsKey(partId);
   }
 
   @Override
-  public String unfold(
+  public String getValueForPart(
     String elementId,
-    String part) throws StateSerializationFormatException
+    String partId) throws SerializationException
   {
     Map<String, String> map = map_s.get(elementId);
     if (map == null)
       throw new IllegalArgumentException("Element ID not valid.");
-    if (!map.containsKey(part))
+    if (!map.containsKey(partId))
       throw new IllegalArgumentException(
-        "Serialization does not contain information about Part ID " + part);
-    return map.get(part);
+        "Serialization does not contain information about Part ID " + partId);
+    return map.get(partId);
   }
 
-  private String newID()
+  @Override
+  public void storeValueForPart(
+    String elementId,
+    String partId,
+    String serializedValue)
+  {
+    Map<String, String> map = map_s.get(elementId);
+    if (map == null)
+      throw new IllegalArgumentException("Element ID not valid.");
+    map.put(partId,
+      serializedValue);
+  }
+
+  @Override
+  public String getID()
   {
     String id = new Integer(sequence).toString();
     sequence = sequence + 1;
@@ -71,24 +85,5 @@ public class StateModelImpl
       new HashMap<String, String>());
     id_sequence.add(id);
     return id;
-  }
-
-  @Override
-  public void fold(
-    String id,
-    String part,
-    String value)
-  {
-    Map<String, String> map = map_s.get(id);
-    if (map == null)
-      throw new IllegalArgumentException("Element ID not valid.");
-    map.put(part,
-      value);
-  }
-
-  @Override
-  public String getID()
-  {
-    return newID();
   }
 }

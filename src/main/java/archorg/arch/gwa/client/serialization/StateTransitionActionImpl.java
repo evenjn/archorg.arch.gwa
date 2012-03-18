@@ -6,9 +6,9 @@ import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
 import archorg.arch.gwa.client.serialization.model.Transition;
 
-public class StatefulActionImpl
+public class StateTransitionActionImpl
   implements
-  StatefulAction
+  StateTransitionAction
 {
   private static StateManager statemanager;
 
@@ -20,7 +20,7 @@ public class StatefulActionImpl
 
   private final SimpleBeaconImpl<String> next_state;
 
-  public StatefulActionImpl(
+  public StateTransitionActionImpl(
     final Transition transition)
   {
     next_state = new SimpleBeaconImpl<String>("initializing");

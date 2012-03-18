@@ -1,16 +1,16 @@
 package archorg.arch.gwa.client.serialization;
 
-import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
-import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
+import archorg.arch.gwa.client.serialization.model.HasSerializationEngine;
+import archorg.arch.gwa.client.serialization.model.SerializationException;
 import archorg.arch.gwa.client.serialization.model.Transition;
 
 public interface StateModelFactory
 {
   String dump(
-    HasObjectStateEngine state,
+    HasSerializationEngine state,
     Transition transition);
 
   void load(
-    HasObjectStateEngine root,
-    String encoded) throws StateSerializationFormatException;
+    HasSerializationEngine root,
+    String encoded) throws SerializationException;
 }

@@ -1,12 +1,12 @@
 package archorg.arch.gwa.client.beacon;
 
 import it.celi.research.balrog.beacon.SimpleBeacon;
-import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
-import archorg.arch.gwa.client.serialization.model.parts.ValueBeaconWrapper;
+import archorg.arch.gwa.client.serialization.model.SerializationException;
+import archorg.arch.gwa.client.serialization.model.parts.ValueBeaconCSEPart;
 
 public abstract class NonNullIntegerBeacon
   extends
-  ValueBeaconWrapper<Integer>
+  ValueBeaconCSEPart<Integer>
 {
   public NonNullIntegerBeacon(
     String beaconID,
@@ -25,10 +25,10 @@ public abstract class NonNullIntegerBeacon
 
   @Override
   protected Integer decode(
-    String value) throws StateSerializationFormatException
+    String value) throws SerializationException
   {
     if (value == null)
-      throw new StateSerializationFormatException("Illegal null value");
+      throw new SerializationException("Illegal null value");
     else
     {
       try
@@ -37,7 +37,7 @@ public abstract class NonNullIntegerBeacon
       }
       catch (Exception e)
       {
-        throw new StateSerializationFormatException("Integer.parseInteger("
+        throw new SerializationException("Integer.parseInteger("
             + value + ") failed.");
       }
     }

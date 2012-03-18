@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import archorg.arch.gwa.client.serialization.model.StateModelImpl;
-import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
+import archorg.arch.gwa.client.serialization.model.SerializationException;
 
 import com.google.gwt.http.client.URL;
 
@@ -18,37 +18,40 @@ public class URIFragmentStateModel
 
   public URIFragmentStateModel(
     String s)
-    throws StateSerializationFormatException
+    throws SerializationException
   {
     if (s.length() == 1)
       return;
+    // throw new StateSerializationFormatException("default state");
+    if (s.length() < 2)
+      throw new SerializationException("too short");
     s = s.substring(1);
     String[] split = s.split(re_outer);
     if (split.length == 0)
-      throw new StateSerializationFormatException("no components");
+      throw new SerializationException("no components");
     if (split.length % 2 == 1)
-      throw new StateSerializationFormatException("odd number of components");
+      throw new SerializationException("odd number of components");
     boolean is_id = false;
     String id = null;
     for (String current : split)
     {
       if (current.isEmpty())
-        throw new StateSerializationFormatException("empty outer segment");
+        throw new SerializationException("empty outer segment");
       is_id = !is_id;
       if (is_id)
       {
         if (!current.matches("[0-9]+"))
-          throw new StateSerializationFormatException("bad_entity_name");
+          throw new SerializationException("bad_entity_name");
         id = current;
       } else
       {
         if (!current.contains(inner_assignment))
-          throw new StateSerializationFormatException("no inner splitter");
+          throw new SerializationException("no inner splitter");
         String[] split2 = current.split(re_inner);
         if (split2.length == 0)
-          throw new StateSerializationFormatException("no components");
+          throw new SerializationException("no components");
         if (split2.length % 2 == 1)
-          throw new StateSerializationFormatException(
+          throw new SerializationException(
             "odd number of components");
         HashMap<String, String> map = new HashMap<String, String>();
         boolean is_fieldname = false;
@@ -57,18 +60,18 @@ public class URIFragmentStateModel
         {
           is_fieldname = !is_fieldname;
           if (piece.isEmpty())
-            throw new StateSerializationFormatException("empty inner segment");
+            throw new SerializationException("empty inner segment");
           if (is_fieldname)
           {
             fieldname = piece;
             if (!fieldname.matches("[a-z]([a-z_]*[a-z])?"))
-              throw new StateSerializationFormatException("bad_field_name");
+              throw new SerializationException("bad_field_name");
           } else
             map.put(fieldname,
               unescape(piece));
         }
         if (map_s.containsKey(id))
-          throw new StateSerializationFormatException("duplicate key");
+          throw new SerializationException("duplicate key");
         map_s.put(id,
           map);
       }
@@ -127,14 +130,14 @@ public class URIFragmentStateModel
   private final static String empty_symbol = "@";
 
   private static String unescape(
-    String s) throws StateSerializationFormatException
+    String s) throws SerializationException
   {
     if (s.equals(null_symbol))
       return null;
     if (s.equals(empty_symbol))
       return "";
     if (!s.matches("[a-zA-Z0-9-_\\.!~\\*'\\(\\)%]+"))
-      throw new StateSerializationFormatException(s);
+      throw new SerializationException(s);
     return URL.decodeQueryString(s);
   }
 

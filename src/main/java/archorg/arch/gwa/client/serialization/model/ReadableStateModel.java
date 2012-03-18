@@ -1,13 +1,12 @@
 package archorg.arch.gwa.client.serialization.model;
 
-
 public interface ReadableStateModel
 {
-  boolean specifies(
+  boolean hasValueForPart(
     String elementId,
-    String part) throws StateSerializationFormatException;
+    String partId) throws SerializationException;
 
-  String unfold(
+  String getValueForPart(
     String elementId,
-    String part) throws StateSerializationFormatException;
+    String partId) throws SerializationException;
 }

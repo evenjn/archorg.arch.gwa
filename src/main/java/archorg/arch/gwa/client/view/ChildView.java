@@ -6,7 +6,7 @@ import it.celi.research.balrog.beacon.SimpleBeaconObserver;
 import it.celi.research.balrog.beacon.SimpleBeaconReadable;
 import it.celi.research.balrog.event.Observable;
 import archorg.arch.gwa.client.join.StringToIntegerJoin;
-import archorg.arch.gwa.client.serialization.StatefulAction;
+import archorg.arch.gwa.client.serialization.StateTransitionAction;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -29,8 +29,8 @@ public class ChildView
 
   public ChildView(
     final SimpleBeacon<Integer> input,
-    final StatefulAction action_curr,
-    final StatefulAction action_next,
+    final StateTransitionAction action_curr,
+    final StateTransitionAction action_next,
     final SimpleBeaconReadable<? extends Iterable<? extends Integer>> results)
   {
     StringToIntegerJoin.join(box,

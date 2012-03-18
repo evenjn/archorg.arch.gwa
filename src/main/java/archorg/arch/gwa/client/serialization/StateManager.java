@@ -5,8 +5,8 @@ import it.celi.research.balrog.beacon.SimpleBeaconReadable;
 import it.celi.research.balrog.event.EventChannel;
 import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
-import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
-import archorg.arch.gwa.client.serialization.model.StateSerializationFormatException;
+import archorg.arch.gwa.client.serialization.model.HasSerializationEngine;
+import archorg.arch.gwa.client.serialization.model.SerializationException;
 import archorg.arch.gwa.client.serialization.model.Transition;
 
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -16,7 +16,7 @@ import com.google.gwt.user.client.History;
 
 public class StateManager
 {
-  private HasObjectStateEngine root;
+  private HasSerializationEngine root;
 
   private boolean loading = false;
 
@@ -45,7 +45,7 @@ public class StateManager
   }
 
   public void setRoot(
-    HasObjectStateEngine root)
+    HasSerializationEngine root)
   {
     this.root = root;
     // environment_change.notify(null);
@@ -71,7 +71,7 @@ public class StateManager
         encoded);
       environment_change.notify(null);
     }
-    catch (StateSerializationFormatException e)
+    catch (SerializationException e)
     {
       String s = e.getMessage();
       if (s == null)

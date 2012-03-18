@@ -7,12 +7,12 @@ import it.celi.research.balrog.beacon.SimpleBeaconReadable;
 import it.celi.research.balrog.event.EventChannel;
 import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
-import archorg.arch.gwa.client.serialization.StatefulActionImpl;
+import archorg.arch.gwa.client.serialization.StateTransitionActionImpl;
 import archorg.arch.gwa.client.serialization.Trigger;
-import archorg.arch.gwa.client.serialization.model.HasObjectStateEngine;
-import archorg.arch.gwa.client.serialization.model.ObjectStateEngine;
-import archorg.arch.gwa.client.serialization.model.parts.BeaconStateEngineAggregation;
-import archorg.arch.gwa.client.serialization.model.parts.ObjectBeaconWrapper;
+import archorg.arch.gwa.client.serialization.model.HasSerializationEngine;
+import archorg.arch.gwa.client.serialization.model.SerializationEngine;
+import archorg.arch.gwa.client.serialization.model.parts.CompositeSerializationEngine;
+import archorg.arch.gwa.client.serialization.model.parts.ObjectBeaconCSEPart;
 
 /**
  * Because View objects are connected to Model objects with a double link (via a
@@ -26,7 +26,7 @@ import archorg.arch.gwa.client.serialization.model.parts.ObjectBeaconWrapper;
  */
 public class RootModel
   implements
-  HasObjectStateEngine
+  HasSerializationEngine
 {
   // output only, transient
   private SimpleBeaconImpl<String> message_impl = new SimpleBeaconImpl<String>(
@@ -105,8 +105,8 @@ public class RootModel
     }
   };
 
-  private final ObjectBeaconWrapper<ChildModel> child_wrapper =
-    new ObjectBeaconWrapper<ChildModel>("child", child_impl, false)
+  private final ObjectBeaconCSEPart<ChildModel> child_wrapper =
+    new ObjectBeaconCSEPart<ChildModel>("child", child_impl, false)
     {
       @Override
       public ChildModel create()
@@ -117,13 +117,12 @@ public class RootModel
       }
     };
 
-  private final ObjectStateEngine engine2 = new BeaconStateEngineAggregation(
-    child_wrapper)
+  private final SerializationEngine engine2 = new CompositeSerializationEngine(child_wrapper)
   {
     @Override
     public void postLoad()
     {
-      child_wrapper.getBeaconStateEngine().postLoad();
+      super.postLoad();
       if (child_impl.isNotNull())
         has_child_impl.setIfNotEqual(true);
       else
@@ -134,9 +133,9 @@ public class RootModel
     private boolean linked = false;
 
     @Override
-    public void link()
+    public void connectToEnvironment()
     {
-      super.link();
+      super.connectToEnvironment();
       if (linked)
         return;
       linked = true;
@@ -146,8 +145,8 @@ public class RootModel
       has_child_impl.subscribe(reset_message_trigger);
       child_impl.subscribe(reset_message_trigger);
       has_child_impl.subscribe(envco);
-      final StatefulActionImpl zchild_action =
-        new StatefulActionImpl(child_wrapper.TOGGLENULLDEFAULT);
+      final StateTransitionActionImpl zchild_action =
+        new StateTransitionActionImpl(child_wrapper.TOGGLENULLDEFAULT);
       has_child_impl.subscribe(new Observer<Object>()
       {
         @Override
@@ -161,23 +160,8 @@ public class RootModel
     }
   };
 
-  private final ObjectStateEngine engine = new BeaconStateEngineAggregation(
-    child_wrapper)
-  {
-    @Override
-    public void postLoad()
-    {
-      super.postLoad();
-      if (child_impl.isNotNull())
-        has_child_impl.setIfNotEqual(true);
-      else
-        has_child_impl.setIfNotEqual(false);
-      message_impl.setIfNotEqual(null);
-    }
-  };
-
   @Override
-  public ObjectStateEngine getObjectStateEngine()
+  public SerializationEngine getSerializationEngine()
   {
     return engine2;
   }
