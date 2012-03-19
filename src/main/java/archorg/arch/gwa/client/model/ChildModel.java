@@ -3,18 +3,22 @@ package archorg.arch.gwa.client.model;
 import it.celi.research.balrog.beacon.SimpleBeacon;
 import it.celi.research.balrog.beacon.SimpleBeaconImpl;
 import it.celi.research.balrog.beacon.SimpleBeaconReadable;
-import it.celi.research.balrog.event.EventChannel;
-import it.celi.research.balrog.event.Observer;
+import it.celi.research.balrog.claudenda.Claudenda;
+import it.celi.research.balrog.claudenda.ClaudendaService;
+import it.celi.research.balrog.claudenda.ClaudendaServiceFactory;
+import it.celi.research.balrog.claudenda.Claudendum;
 
 import java.util.ArrayList;
 
 import archorg.arch.gwa.client.Client;
 import archorg.arch.gwa.client.beacon.NonNullIntegerBeacon;
+import archorg.arch.gwa.client.serialization.EnvironmentEventBus;
 import archorg.arch.gwa.client.serialization.StateTransitionAction;
 import archorg.arch.gwa.client.serialization.StateTransitionActionImpl;
 import archorg.arch.gwa.client.serialization.Trigger;
 import archorg.arch.gwa.client.serialization.model.HasSerializationEngine;
 import archorg.arch.gwa.client.serialization.model.SerializationEngine;
+import archorg.arch.gwa.client.serialization.model.SimpleTransition;
 import archorg.arch.gwa.client.serialization.model.Transition;
 import archorg.arch.gwa.client.serialization.model.parts.CompositeSerializationEngine;
 import archorg.arch.gwa.shared.Input;
@@ -26,14 +30,32 @@ public class ChildModel
   implements
   HasSerializationEngine
 {
+  private ClaudendaService claudenda_service;
+
   public ChildModel(
     final int default_value,
-    final EventChannel<Void> envchan,
-    final Observer<? super Object> envco,
+    final Claudenda clau,
+    final EnvironmentEventBus eeb,
     final SimpleBeacon<String> message_impl,
     final Trigger<Object> reset_message)
   {
     input = new SimpleBeaconImpl<Integer>(default_value);
+    claudenda_service =
+      ClaudendaServiceFactory.create(this.getClass().getName());
+    actioncurrent =
+      new StateTransitionActionImpl(claudenda_service, action_impl);
+    actionnext =
+      new StateTransitionActionImpl(claudenda_service, next_action_impl);
+    clau.add(new Claudendum()
+    {
+      @Override
+      public void close()
+      {
+        input.unsubscribe(reset_message);
+        input.unsubscribe(eeb);
+        claudenda_service.close();
+      }
+    });
     engine =
       new CompositeSerializationEngine(new NonNullIntegerBeacon("input", input,
         default_value)
@@ -58,14 +80,7 @@ public class ChildModel
             return;
           linked = true;
           input.subscribe(reset_message);
-          input.subscribe(envco);
-        }
-
-        public void disconnectFromEnvironment()
-        {
-          super.disconnectFromEnvironment();
-          input.unsubscribe(reset_message);
-          input.unsubscribe(envco);
+          input.subscribe(eeb);
         }
 
         @Override
@@ -99,18 +114,22 @@ public class ChildModel
       };
   }
 
-  private final Transition action_impl = new Transition();
+  private final Transition action_impl = new SimpleTransition();
+
+  private final StateTransitionAction actioncurrent;
+
+  private final StateTransitionAction actionnext;
 
   public StateTransitionAction getActionCurrent()
   {
-    return new StateTransitionActionImpl(action_impl);
+    return actioncurrent;
   }
 
-  private final Transition next_action_impl = new Transition();
+  private final Transition next_action_impl = new SimpleTransition();
 
   public StateTransitionAction getActionNext()
   {
-    return new StateTransitionActionImpl(next_action_impl);
+    return actionnext;
   }
 
   public final SimpleBeacon<Integer> input;

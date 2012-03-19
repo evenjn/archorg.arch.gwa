@@ -125,26 +125,32 @@ public class StateManager
       true);
   }
 
-  public EventChannel<Void> getEnvironmentChangeChannel()
+  public EnvironmentEventBus getEnvironmentEventBus()
   {
     return environment_change;
   }
 
-  private EventChannel<Void> environment_change = new EventChannel<Void>();
+  private MyEnvironmentEventBus environment_change =
+    new MyEnvironmentEventBus();
 
-  public Observer<Object> getEnvironmentChangeObserver()
-  {
-    return environmentChangeObserver;
-  }
-
-  private Observer<Object> environmentChangeObserver = new Observer<Object>()
+  private static class MyEnvironmentEventBus
+    extends
+    EventChannel<Void>
+    implements
+    EnvironmentEventBus
   {
     @Override
     public void notice(
       Observable<? extends Object> observable,
       Object message)
     {
-      environment_change.notify(null);
+      sendSignal();
     }
-  };
+
+    @Override
+    public void sendSignal()
+    {
+      notify(null);
+    }
+  }
 }

@@ -109,5 +109,10 @@
       <artifactId>balrog.beacon</artifactId>
       <version>0.3.0</version>
     </dependency>
+    <dependency>
+      <groupId>it.celi.research</groupId>
+      <artifactId>balrog.claudenda</artifactId>
+      <version>0.1.1</version>
+    </dependency>
   </dependencies>
 </project>

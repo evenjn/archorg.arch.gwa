@@ -4,9 +4,13 @@ import it.celi.research.balrog.beacon.SimpleBeacon;
 import it.celi.research.balrog.beacon.SimpleBeaconChange;
 import it.celi.research.balrog.beacon.SimpleBeaconImpl;
 import it.celi.research.balrog.beacon.SimpleBeaconReadable;
-import it.celi.research.balrog.event.EventChannel;
+import it.celi.research.balrog.claudenda.Claudenda;
+import it.celi.research.balrog.claudenda.ClaudendaService;
+import it.celi.research.balrog.claudenda.ClaudendaServiceFactory;
+import it.celi.research.balrog.claudenda.Claudendum;
 import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
+import archorg.arch.gwa.client.serialization.EnvironmentEventBus;
 import archorg.arch.gwa.client.serialization.StateTransitionActionImpl;
 import archorg.arch.gwa.client.serialization.Trigger;
 import archorg.arch.gwa.client.serialization.model.HasSerializationEngine;
@@ -60,20 +64,41 @@ public class RootModel
     return child_impl;
   }
 
-  private final EventChannel<Void> envchan;
+  private final EnvironmentEventBus eeb;
 
-  private final Observer<? super Object> envco;
+  private final Claudenda clau;
 
   public RootModel(
-    EventChannel<Void> envchan,
-    Observer<? super Object> envco)
+    Claudenda clau,
+    EnvironmentEventBus eeb)
   {
-    this.envchan = envchan;
-    this.envco = envco;
+    this.clau = clau;
+    this.eeb = eeb;
   }
 
-  private Trigger<Boolean> create_child_trigger = new Trigger<Boolean>()
+  // private final TriggerToClose create_child_trigger;
+  private class TriggerToClose
+    extends
+    Trigger<Boolean>
   {
+    ClaudendaService claudenda_service = ClaudendaServiceFactory
+      .create("triggertoclose1",
+        getClass().getName());
+
+    public TriggerToClose(
+      Claudenda clau)
+    {
+      clau.add(new Claudendum()
+      {
+        @Override
+        public void close()
+        {
+          if (claudenda_service != null)
+            claudenda_service.close();
+        }
+      });
+    }
+
     @Override
     public void onTrigger(
       Observable<? extends SimpleBeaconChange<? extends Boolean>> observable,
@@ -83,16 +108,19 @@ public class RootModel
         return;
       if (message.getNew())
       {
-        child_impl.setNevertheless(new ChildModel(0, envchan, envco,
+        claudenda_service = ClaudendaServiceFactory.create("triggertoclose2",
+          getClass().getName());
+        child_impl.setNevertheless(new ChildModel(0, claudenda_service, eeb,
           message_impl, reset_message_trigger));
-        envchan.notify(null);
+        eeb.sendSignal();
       } else
       {
         child_impl.setIfNotEqual(null);
-        envchan.notify(null);
+        claudenda_service.close();
+        eeb.sendSignal();
       }
     }
-  };
+  }
 
   private Trigger<Object> reset_message_trigger = new Trigger<Object>()
   {
@@ -109,16 +137,20 @@ public class RootModel
     new ObjectBeaconCSEPart<ChildModel>("child", child_impl, false)
     {
       @Override
-      public ChildModel create()
+      public ChildModel create(
+        Claudenda clau)
       {
         ChildModel childModel =
-          new ChildModel(0, envchan, envco, message_impl, reset_message_trigger);
+          new ChildModel(0, clau, eeb, message_impl, reset_message_trigger);
         return childModel;
       }
     };
 
-  private final SerializationEngine engine2 = new CompositeSerializationEngine(child_wrapper)
+  private final SerializationEngine engine2 = new CompositeSerializationEngine(
+    child_wrapper)
   {
+    private StateTransitionActionImpl zchild_action;
+
     @Override
     public void postLoad()
     {
@@ -144,9 +176,9 @@ public class RootModel
       // has_child_impl.subscribe(create_child_trigger);
       has_child_impl.subscribe(reset_message_trigger);
       child_impl.subscribe(reset_message_trigger);
-      has_child_impl.subscribe(envco);
-      final StateTransitionActionImpl zchild_action =
-        new StateTransitionActionImpl(child_wrapper.TOGGLENULLDEFAULT);
+      has_child_impl.subscribe(eeb);
+      zchild_action =
+        new StateTransitionActionImpl(clau, child_wrapper.TOGGLENULLDEFAULT);
       has_child_impl.subscribe(new Observer<Object>()
       {
         @Override

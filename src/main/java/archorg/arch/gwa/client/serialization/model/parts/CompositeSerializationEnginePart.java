@@ -17,9 +17,7 @@ public interface CompositeSerializationEnginePart
     ReadableStateModel s,
     String id) throws SerializationException;
 
-  void link();
-
-  void unlink();
+  void connectToEnvironment();
 
   void postLoad();
 }

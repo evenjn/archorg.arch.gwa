@@ -14,7 +14,14 @@ public class ObjectCSEPart<T extends HasSerializationEngine>
 
   private final String partId;
 
-  public ObjectCSEPart(
+  public static <T extends HasSerializationEngine> ObjectCSEPart<T> create(
+    T object,
+    String partId)
+  {
+    return new ObjectCSEPart<T>(object, partId);
+  }
+
+  protected ObjectCSEPart(
     T object,
     String partId)
   {
@@ -71,15 +78,9 @@ public class ObjectCSEPart<T extends HasSerializationEngine>
   }
 
   @Override
-  public void link()
+  public void connectToEnvironment()
   {
     object.getSerializationEngine().connectToEnvironment();
-  }
-
-  @Override
-  public void unlink()
-  {
-    object.getSerializationEngine().disconnectFromEnvironment();
   }
 
   @Override

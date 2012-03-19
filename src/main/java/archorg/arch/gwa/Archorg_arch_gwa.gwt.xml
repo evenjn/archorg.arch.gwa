@@ -4,6 +4,7 @@
   <inherits name='com.google.gwt.user.User' />
   <inherits name='it.celi.research.balrog.Event' />
   <inherits name='it.celi.research.balrog.Beacon' />
+  <inherits name='it.celi.research.balrog.Claudenda' />
   <!-- Inherit the default GWT style sheet. You can change -->
   <!-- the theme of your GWT application by uncommenting -->
   <!-- any one of the following lines. -->

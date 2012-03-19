@@ -12,13 +12,20 @@ public class CompositeSerializationEngine
   implements
   SerializationEngine
 {
-  private ArrayList<CompositeSerializationEnginePart> ios = new ArrayList<CompositeSerializationEnginePart>();
+  private ArrayList<CompositeSerializationEnginePart> ios =
+    new ArrayList<CompositeSerializationEnginePart>();
 
-  public CompositeSerializationEngine(
+  protected CompositeSerializationEngine(
     CompositeSerializationEnginePart... beacons)
   {
     for (CompositeSerializationEnginePart beacon : beacons)
       ios.add(beacon);
+  }
+
+  public static CompositeSerializationEngine create(
+    CompositeSerializationEnginePart... beacons)
+  {
+    return new CompositeSerializationEngine(beacons);
   }
 
   @Override
@@ -59,13 +66,6 @@ public class CompositeSerializationEngine
   public void connectToEnvironment()
   {
     for (CompositeSerializationEnginePart bs : ios)
-      bs.link();
-  }
-
-  @Override
-  public void disconnectFromEnvironment()
-  {
-    for (CompositeSerializationEnginePart bs : ios)
-      bs.unlink();
+      bs.connectToEnvironment();
   }
 }

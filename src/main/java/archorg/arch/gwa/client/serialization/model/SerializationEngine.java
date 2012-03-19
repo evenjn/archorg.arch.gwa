@@ -22,7 +22,5 @@ public interface SerializationEngine
 
   void connectToEnvironment();
 
-  void disconnectFromEnvironment();
-
   void postLoad();
 }

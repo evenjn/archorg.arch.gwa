@@ -1,9 +1,13 @@
 package archorg.arch.gwa.client.serialization.model.parts;
 
 import it.celi.research.balrog.beacon.SimpleBeacon;
+import it.celi.research.balrog.claudenda.Claudenda;
+import it.celi.research.balrog.claudenda.ClaudendaService;
+import it.celi.research.balrog.claudenda.ClaudendaServiceFactory;
 import archorg.arch.gwa.client.serialization.model.HasSerializationEngine;
 import archorg.arch.gwa.client.serialization.model.ReadableStateModel;
 import archorg.arch.gwa.client.serialization.model.SerializationException;
+import archorg.arch.gwa.client.serialization.model.SimpleTransition;
 import archorg.arch.gwa.client.serialization.model.Transition;
 import archorg.arch.gwa.client.serialization.model.WritableStateModel;
 
@@ -17,9 +21,10 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
 
   private final boolean default_is_null;
 
-  public abstract T create();
+  public abstract T create(
+    Claudenda clau);
 
-  public ObjectBeaconCSEPart(
+  protected ObjectBeaconCSEPart(
     String partId,
     SimpleBeacon<T> beacon,
     boolean default_is_null)
@@ -29,11 +34,13 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
     this.default_is_null = default_is_null;
   }
 
-  public final Transition SETNULL = new Transition();
+  public final Transition SETNULL = new SimpleTransition();
 
-  public final Transition SETDEFAULT = new Transition();
+  public final Transition SETDEFAULT = new SimpleTransition();
 
-  public final Transition TOGGLENULLDEFAULT = new Transition();
+  public final Transition TOGGLENULLDEFAULT = new SimpleTransition();
+
+  private ClaudendaService claudenda_service;
 
   @Override
   public void dump(
@@ -45,11 +52,14 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
     {
       if (beacon.isNull())
       {
-        String vid = create().getSerializationEngine().writeDestinationState(s,
-          a);
+        ClaudendaService clau = ClaudendaServiceFactory.create(this.getClass());
+        String vid =
+          create(clau).getSerializationEngine().writeDestinationState(s,
+            a);
         s.storeValueForPart(container_id,
           partId,
           vid);
+        clau.close();
       } else
       {
         s.storeValueForPart(container_id,
@@ -74,11 +84,14 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
           null);
       } else
       {
-        String vid = create().getSerializationEngine().writeDestinationState(s,
-          a);
+        ClaudendaService clau = ClaudendaServiceFactory.create(this.getClass());
+        String vid =
+          create(clau).getSerializationEngine().writeDestinationState(s,
+            a);
         s.storeValueForPart(container_id,
           partId,
           vid);
+        clau.close();
       }
       return;
     }
@@ -93,8 +106,9 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
       return;
     } else
     {
-      String vid = beacon.get().getSerializationEngine().writeDestinationState(s,
-        a);
+      String vid =
+        beacon.get().getSerializationEngine().writeDestinationState(s,
+          a);
       s.storeValueForPart(container_id,
         partId,
         vid);
@@ -129,13 +143,17 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
       {
         // it's a reset to null
         if (beacon.isNotNull())
-          // detaches all observers contained in this object
-          beacon.get().getSerializationEngine().disconnectFromEnvironment();
+        {
+          claudenda_service.close();
+        }
         beacon.setIfNotEqual(null);
         return;
       }
       if (beacon.isNull())
-        beacon.setIfNotEqual(create());
+      {
+        claudenda_service = ClaudendaServiceFactory.create(this.getClass());
+        beacon.setIfNotEqual(create(claudenda_service));
+      }
       // this system asks the object in the beacon to load an empty state,
       // it's a reset!
       beacon.get().getSerializationEngine().loadState(validate,
@@ -154,8 +172,11 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
       }
       // it's a set to null
       if (beacon.isNotNull())
+      {
         // detaches all observers contained in this object
-        beacon.get().getSerializationEngine().disconnectFromEnvironment();
+        claudenda_service.close();
+        claudenda_service = null;
+      }
       beacon.setIfNotEqual(null);
       return;
     }
@@ -165,21 +186,30 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
       T t;
       if (beacon.isNull())
       {
-        t = create();
+        ClaudendaService clau = ClaudendaServiceFactory.create(this.getClass());
+        t = create(clau);
+        t.getSerializationEngine().loadState(true,
+          s,
+          string);
+        clau.close();
       } else
       {
         t = beacon.get();
+        t.getSerializationEngine().loadState(true,
+          s,
+          string);
       }
-      t.getSerializationEngine().loadState(true,
-        s,
-        string);
     }
     if (!validate)
     {
       T t;
       if (beacon.isNull())
       {
-        t = create();
+        claudenda_service = ClaudendaServiceFactory.create(this.getClass());
+        t = create(claudenda_service);
+        t.getSerializationEngine().loadState(false,
+          s,
+          string);
         beacon.setIfNotEqual(t);
       } else
       {
@@ -193,16 +223,9 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
   }
 
   @Override
-  public void link()
+  public void connectToEnvironment()
   {
     if (beacon.isNotNull())
       beacon.get().getSerializationEngine().connectToEnvironment();
-  }
-
-  @Override
-  public void unlink()
-  {
-    if (beacon.isNotNull())
-      beacon.get().getSerializationEngine().disconnectFromEnvironment();
   }
 }

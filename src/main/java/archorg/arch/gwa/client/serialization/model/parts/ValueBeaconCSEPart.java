@@ -80,14 +80,8 @@ public abstract class ValueBeaconCSEPart<T>
   }
 
   @Override
-  public void link()
+  public void connectToEnvironment()
   {
-    // nothing to link
-  }
-
-  @Override
-  public void unlink()
-  {
-    // nothing to unlink
+    // nothing to do
   }
 }

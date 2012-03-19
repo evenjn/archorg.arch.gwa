@@ -1,5 +1,7 @@
 package archorg.arch.gwa.client;
 
+import it.celi.research.balrog.claudenda.ClaudendaService;
+import it.celi.research.balrog.claudenda.ClaudendaServiceFactory;
 import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
 import archorg.arch.gwa.client.model.RootModel;
@@ -28,13 +30,13 @@ public class Client
     // // TriggerBeacons can be configured to trigger a dump of the current
     // state
     // create the model
+    ClaudendaService clau = ClaudendaServiceFactory.create(getClass());
     final RootModel model =
-      new RootModel(statemanager.getEnvironmentChangeChannel(),
-        statemanager.getEnvironmentChangeObserver());
+      new RootModel(clau, statemanager.getEnvironmentEventBus());
     model.getSerializationEngine().connectToEnvironment();
     statemanager.setRoot(model);
     // after the model is built, we synchronize all links
-    statemanager.getEnvironmentChangeChannel().notify(null);
+    statemanager.getEnvironmentEventBus().sendSignal();
     // errors in the loading are routed using this observer
     statemanager.getMessage().subscribe(new Observer<String>()
     {
@@ -48,7 +50,8 @@ public class Client
     });
     // create the view, connected to the model
     RootView rv =
-      new RootView(model.getHasChildB(), model.getChildBR(), model.getMessageBR());
+      new RootView(model.getHasChildB(), model.getChildBR(),
+        model.getMessageBR());
     // publish the view
     RootPanel.get().add(rv);
     History.fireCurrentHistoryState();
