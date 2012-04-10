@@ -16,28 +16,46 @@ public abstract class ValueBeaconCSEPart<T>
 
   private final T default_value;
 
-  public ValueBeaconCSEPart(
+  private final ValueSerializationEngine<T> engine;
+
+  public static <T> ValueBeaconCSEPart<T> createStatic(
     String beaconID,
     SimpleBeacon<T> beacon,
-    T default_value)
+    T default_value,
+    ValueSerializationEngine<T> engine)
+  {
+    return new ValueBeaconCSEPart<T>(beaconID, beacon, default_value, engine)
+    {
+      @Override
+      protected T transform(
+        T value,
+        Transition a)
+      {
+        return value;
+      }
+    };
+  }
+
+  protected ValueBeaconCSEPart(
+    String beaconID,
+    SimpleBeacon<T> beacon,
+    T default_value,
+    ValueSerializationEngine<T> engine)
   {
     this.beaconID = beaconID;
     this.beacon = beacon;
     this.default_value = default_value;
+    this.engine = engine;
   }
 
-  protected abstract String encode(
-    T value);
-
-  protected abstract T decode(
-    String value) throws SerializationException;
-
+  // protected abstract T validate(
+  // T value) throws SerializationException;
   protected abstract T transform(
     T value,
     Transition a);
 
   @Override
-  public void dump(
+  public boolean dump(
     WritableStateModel s,
     String container_id,
     Transition a)
@@ -45,14 +63,15 @@ public abstract class ValueBeaconCSEPart<T>
     T transformed = transform(beacon.get(),
       a);
     if (transformed == null && default_value == null)
-      return;
+      return false;
     if (transformed != null && default_value != null
         && transformed.equals(default_value))
-      return;
-    String vid = encode(transformed);
+      return false;
+    String vid = engine.serialize(transformed);
     s.storeValueForPart(container_id,
       beaconID,
       vid);
+    return true;
   }
 
   @Override
@@ -74,7 +93,8 @@ public abstract class ValueBeaconCSEPart<T>
     }
     String string = s.getValueForPart(id,
       beaconID);
-    T decoded = decode(string);
+    T decoded = engine.deserialize(string);
+    // decoded = validate(decoded);
     if (!validate)
       beacon.setIfNotEqual(decoded);
   }

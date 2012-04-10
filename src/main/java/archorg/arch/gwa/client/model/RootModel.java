@@ -5,9 +5,6 @@ import it.celi.research.balrog.beacon.SimpleBeaconChange;
 import it.celi.research.balrog.beacon.SimpleBeaconImpl;
 import it.celi.research.balrog.beacon.SimpleBeaconReadable;
 import it.celi.research.balrog.claudenda.Claudenda;
-import it.celi.research.balrog.claudenda.ClaudendaService;
-import it.celi.research.balrog.claudenda.ClaudendaServiceFactory;
-import it.celi.research.balrog.claudenda.Claudendum;
 import it.celi.research.balrog.event.Observable;
 import it.celi.research.balrog.event.Observer;
 import archorg.arch.gwa.client.serialization.EnvironmentEventBus;
@@ -77,51 +74,50 @@ public class RootModel
   }
 
   // private final TriggerToClose create_child_trigger;
-  private class TriggerToClose
-    extends
-    Trigger<Boolean>
-  {
-    ClaudendaService claudenda_service = ClaudendaServiceFactory
-      .create("triggertoclose1",
-        getClass().getName());
-
-    public TriggerToClose(
-      Claudenda clau)
-    {
-      clau.add(new Claudendum()
-      {
-        @Override
-        public void close()
-        {
-          if (claudenda_service != null)
-            claudenda_service.close();
-        }
-      });
-    }
-
-    @Override
-    public void onTrigger(
-      Observable<? extends SimpleBeaconChange<? extends Boolean>> observable,
-      SimpleBeaconChange<? extends Boolean> message)
-    {
-      if (message.newEqualsOld())
-        return;
-      if (message.getNew())
-      {
-        claudenda_service = ClaudendaServiceFactory.create("triggertoclose2",
-          getClass().getName());
-        child_impl.setNevertheless(new ChildModel(0, claudenda_service, eeb,
-          message_impl, reset_message_trigger));
-        eeb.sendSignal();
-      } else
-      {
-        child_impl.setIfNotEqual(null);
-        claudenda_service.close();
-        eeb.sendSignal();
-      }
-    }
-  }
-
+  // private class TriggerToClose
+  // extends
+  // Trigger<Boolean>
+  // {
+  // ClaudendaService claudenda_service = ClaudendaServiceFactory
+  // .create("triggertoclose1",
+  // getClass().getName());
+  //
+  // public TriggerToClose(
+  // Claudenda clau)
+  // {
+  // clau.add(new Claudendum()
+  // {
+  // @Override
+  // public void close()
+  // {
+  // if (claudenda_service != null)
+  // claudenda_service.close();
+  // }
+  // });
+  // }
+  //
+  // @Override
+  // public void onTrigger(
+  // Observable<? extends SimpleBeaconChange<? extends Boolean>> observable,
+  // SimpleBeaconChange<? extends Boolean> message)
+  // {
+  // if (message.newEqualsOld())
+  // return;
+  // if (message.getNew())
+  // {
+  // claudenda_service = ClaudendaServiceFactory.create("triggertoclose2",
+  // getClass().getName());
+  // child_impl.setNevertheless(new ChildModel(0, claudenda_service, eeb,
+  // message_impl, reset_message_trigger));
+  // eeb.sendSignal();
+  // } else
+  // {
+  // child_impl.setIfNotEqual(null);
+  // claudenda_service.close();
+  // eeb.sendSignal();
+  // }
+  // }
+  // }
   private Trigger<Object> reset_message_trigger = new Trigger<Object>()
   {
     @Override

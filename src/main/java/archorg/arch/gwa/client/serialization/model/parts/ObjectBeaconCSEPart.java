@@ -43,7 +43,7 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
   private ClaudendaService claudenda_service;
 
   @Override
-  public void dump(
+  public boolean dump(
     WritableStateModel s,
     String container_id,
     Transition a)
@@ -52,28 +52,49 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
     {
       if (beacon.isNull())
       {
-        ClaudendaService clau = ClaudendaServiceFactory.create(this.getClass());
-        String vid =
-          create(clau).getSerializationEngine().writeDestinationState(s,
-            a);
-        s.storeValueForPart(container_id,
-          partId,
-          vid);
-        clau.close();
+        if (default_is_null)
+        {
+          // nothing to do! this behaves as a setnull
+          return false;
+        } else
+        {
+          ClaudendaService clau =
+            ClaudendaServiceFactory.create(this.getClass().getName(),
+              "dump");
+          String vid =
+            create(clau).getSerializationEngine().writeDestinationState(s,
+              a);
+          clau.close();
+          if (vid == null)
+            return false;
+          else
+          {
+            s.storeValueForPart(container_id,
+              partId,
+              vid);
+            return true;
+          }
+        }
       } else
       {
         s.storeValueForPart(container_id,
           partId,
           null);
+        if (default_is_null)
+          return false;
+        else
+          return true;
       }
-      return;
     }
     if (a == SETNULL)
     {
       s.storeValueForPart(container_id,
         partId,
         null);
-      return;
+      if (default_is_null)
+        return false;
+      else
+        return true;
     }
     if (a == SETDEFAULT)
     {
@@ -88,12 +109,14 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
         String vid =
           create(clau).getSerializationEngine().writeDestinationState(s,
             a);
+        if (vid == null)
+          vid = s.getID();
         s.storeValueForPart(container_id,
           partId,
           vid);
         clau.close();
       }
-      return;
+      return false;
     }
     if (beacon.isNull())
     {
@@ -102,16 +125,30 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
         s.storeValueForPart(container_id,
           partId,
           null);
+        return true;
+      } else
+      {
+        return false;
       }
-      return;
     } else
     {
       String vid =
         beacon.get().getSerializationEngine().writeDestinationState(s,
           a);
+      if (vid == null)
+        vid = s.getID();
       s.storeValueForPart(container_id,
         partId,
         vid);
+      if (default_is_null)
+        return true;
+      else
+      {
+        if (vid == null)
+          return false;
+        else
+          return true;
+      }
     }
   }
 

@@ -11,7 +11,7 @@ import it.celi.research.balrog.claudenda.Claudendum;
 import java.util.ArrayList;
 
 import archorg.arch.gwa.client.Client;
-import archorg.arch.gwa.client.beacon.NonNullIntegerBeacon;
+import archorg.arch.gwa.client.beacon.SafeSimpleBeaconImpl;
 import archorg.arch.gwa.client.serialization.EnvironmentEventBus;
 import archorg.arch.gwa.client.serialization.StateTransitionAction;
 import archorg.arch.gwa.client.serialization.StateTransitionActionImpl;
@@ -21,6 +21,8 @@ import archorg.arch.gwa.client.serialization.model.SerializationEngine;
 import archorg.arch.gwa.client.serialization.model.SimpleTransition;
 import archorg.arch.gwa.client.serialization.model.Transition;
 import archorg.arch.gwa.client.serialization.model.parts.CompositeSerializationEngine;
+import archorg.arch.gwa.client.serialization.model.parts.ValueBeaconCSEPart;
+import archorg.arch.gwa.client.serialization.model.parts.value.IntegerSerializationEngine;
 import archorg.arch.gwa.shared.Input;
 import archorg.arch.gwa.shared.Output;
 
@@ -39,7 +41,19 @@ public class ChildModel
     final SimpleBeacon<String> message_impl,
     final Trigger<Object> reset_message)
   {
-    input = new SimpleBeaconImpl<Integer>(default_value);
+    input =
+      new SafeSimpleBeaconImpl<Integer>(new SimpleBeaconImpl<Integer>(
+        default_value))
+      {
+        @Override
+        protected Integer safeReplace(
+          Integer value)
+        {
+          if (value == null || value < 0 || value > 20)
+            return default_value;
+          return value;
+        }
+      };
     claudenda_service =
       ClaudendaServiceFactory.create(this.getClass().getName());
     actioncurrent =
@@ -57,8 +71,8 @@ public class ChildModel
       }
     });
     engine =
-      new CompositeSerializationEngine(new NonNullIntegerBeacon("input", input,
-        default_value)
+      new CompositeSerializationEngine(new ValueBeaconCSEPart<Integer>("input",
+        input, default_value, IntegerSerializationEngine.DEFAULT)
       {
         @Override
         protected Integer transform(
@@ -71,14 +85,14 @@ public class ChildModel
         }
       })
       {
-        boolean linked = false;
+        boolean connectedToEnvironment = false;
 
         public void connectToEnvironment()
         {
           super.connectToEnvironment();
-          if (linked)
+          if (connectedToEnvironment)
             return;
-          linked = true;
+          connectedToEnvironment = true;
           input.subscribe(reset_message);
           input.subscribe(eeb);
         }

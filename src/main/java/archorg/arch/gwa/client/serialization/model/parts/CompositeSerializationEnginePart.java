@@ -7,7 +7,15 @@ import archorg.arch.gwa.client.serialization.model.WritableStateModel;
 
 public interface CompositeSerializationEnginePart
 {
-  void dump(
+  /**
+   * 
+   * @param s
+   * @param container_id
+   * @param a
+   * @return true when some contribution to the model was dumped. false if this
+   *         part is in its default state.
+   */
+  boolean dump(
     WritableStateModel s,
     String container_id,
     Transition a);

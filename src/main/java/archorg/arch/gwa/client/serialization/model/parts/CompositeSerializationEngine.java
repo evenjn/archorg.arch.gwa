@@ -31,12 +31,12 @@ public class CompositeSerializationEngine
   @Override
   public void loadState(
     boolean validate,
-    ReadableStateModel s,
+    ReadableStateModel statemodel,
     String elementID) throws SerializationException
   {
     for (CompositeSerializationEnginePart bs : ios)
       bs.load(validate,
-        s,
+        statemodel,
         elementID);
   }
 
@@ -49,17 +49,23 @@ public class CompositeSerializationEngine
 
   @Override
   public String writeDestinationState(
-    WritableStateModel s,
-    Transition a)
+    WritableStateModel statemodel,
+    Transition transition)
   {
-    String id = s.getID();
+    String id = statemodel.getID();
+    boolean anything_interesting = false;
     for (CompositeSerializationEnginePart bs : ios)
     {
-      bs.dump(s,
+      boolean interesting = bs.dump(statemodel,
         id,
-        a);
+        transition);
+      if (interesting)
+        anything_interesting = true;
     }
-    return id;
+    if (anything_interesting)
+      return id;
+    else
+      return null;
   }
 
   @Override

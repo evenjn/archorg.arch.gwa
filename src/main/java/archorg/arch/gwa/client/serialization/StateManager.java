@@ -11,7 +11,6 @@ import archorg.arch.gwa.client.serialization.model.Transition;
 
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.History;
 
 public class StateManager
@@ -54,13 +53,12 @@ public class StateManager
   private void load(
     String historyToken)
   {
-    String encoded = URL.decodeQueryString(historyToken);
-    if (encoded.isEmpty())
+    if (historyToken.isEmpty())
     {
       // if the token is empty, behave as if the token was a reset token.
-      encoded = "!";
+      historyToken = "!";
     }
-    if (!encoded.startsWith("!"))
+    if (!historyToken.startsWith("!"))
       // this is a regular link
       return;
     loading = true;
@@ -68,7 +66,7 @@ public class StateManager
     try
     {
       factory.load(root,
-        encoded);
+        historyToken);
       environment_change.notify(null);
     }
     catch (SerializationException e)
