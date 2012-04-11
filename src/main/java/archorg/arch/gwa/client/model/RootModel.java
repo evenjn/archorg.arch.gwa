@@ -156,6 +156,18 @@ public class RootModel
       else
         has_child_impl.setIfNotEqual(false);
       message_impl.setIfNotEqual(null);
+      zchild_action =
+        new StateTransitionActionImpl(clau, child_wrapper.TOGGLENULLDEFAULT);
+      has_child_impl.subscribe(new Observer<Object>()
+      {
+        @Override
+        public void notice(
+          Observable<? extends Object> observable,
+          Object message)
+        {
+          zchild_action.execute();
+        }
+      });
     }
 
     private boolean linked = false;
@@ -173,18 +185,6 @@ public class RootModel
       has_child_impl.subscribe(reset_message_trigger);
       child_impl.subscribe(reset_message_trigger);
       has_child_impl.subscribe(eeb);
-      zchild_action =
-        new StateTransitionActionImpl(clau, child_wrapper.TOGGLENULLDEFAULT);
-      has_child_impl.subscribe(new Observer<Object>()
-      {
-        @Override
-        public void notice(
-          Observable<? extends Object> observable,
-          Object message)
-        {
-          zchild_action.execute();
-        }
-      });
     }
   };
 
