@@ -30,7 +30,8 @@ public class Client
     // // TriggerBeacons can be configured to trigger a dump of the current
     // state
     // create the model
-    ClaudendaService clau = ClaudendaServiceFactory.create(getClass());
+    ClaudendaService clau =
+      ClaudendaServiceFactory.create(getClass().getName());
     final RootModel model =
       new RootModel(clau, statemanager.getEnvironmentEventBus());
     model.getSerializationEngine().connectToEnvironment();

@@ -47,6 +47,11 @@ public class StateTransitionActionImpl
     statemanager.store(next_state.get());
   }
 
+  public void calculate()
+  {
+    next_state.setNevertheless(statemanager.serialize(transition));
+  }
+
   private Observer<Void> observer = new Observer<Void>()
   {
     @Override

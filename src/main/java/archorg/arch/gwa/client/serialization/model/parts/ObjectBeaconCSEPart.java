@@ -105,7 +105,8 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
           null);
       } else
       {
-        ClaudendaService clau = ClaudendaServiceFactory.create(this.getClass());
+        ClaudendaService clau =
+          ClaudendaServiceFactory.create(getClass().getName());
         String vid =
           create(clau).getSerializationEngine().writeDestinationState(s,
             a);
@@ -188,7 +189,8 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
       }
       if (beacon.isNull())
       {
-        claudenda_service = ClaudendaServiceFactory.create(this.getClass());
+        claudenda_service =
+          ClaudendaServiceFactory.create(getClass().getName());
         beacon.setIfNotEqual(create(claudenda_service));
       }
       // this system asks the object in the beacon to load an empty state,
@@ -223,7 +225,8 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
       T t;
       if (beacon.isNull())
       {
-        ClaudendaService clau = ClaudendaServiceFactory.create(this.getClass());
+        ClaudendaService clau =
+          ClaudendaServiceFactory.create(getClass().getName());
         t = create(clau);
         t.getSerializationEngine().loadState(true,
           s,
@@ -242,7 +245,8 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
       T t;
       if (beacon.isNull())
       {
-        claudenda_service = ClaudendaServiceFactory.create(this.getClass());
+        claudenda_service =
+          ClaudendaServiceFactory.create(getClass().getName());
         t = create(claudenda_service);
         t.getSerializationEngine().loadState(false,
           s,
