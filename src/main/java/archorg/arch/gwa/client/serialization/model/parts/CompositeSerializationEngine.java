@@ -22,7 +22,7 @@ public class CompositeSerializationEngine
       ios.add(beacon);
   }
 
-  public static CompositeSerializationEngine create(
+  public static CompositeSerializationEngine nu(
     CompositeSerializationEnginePart... beacons)
   {
     return new CompositeSerializationEngine(beacons);
@@ -73,5 +73,12 @@ public class CompositeSerializationEngine
   {
     for (CompositeSerializationEnginePart bs : ios)
       bs.connectToEnvironment();
+  }
+
+  @Override
+  public void resetToDefaultState()
+  {
+    for (CompositeSerializationEnginePart bs : ios)
+      bs.resetToDefaultState();
   }
 }

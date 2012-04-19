@@ -42,7 +42,7 @@ public class ObjectCSEPart<T extends HasSerializationEngine>
    * 
    * @return
    */
-  public static <T extends HasSerializationEngine> ObjectCSEPart<T> create(
+  public static <T extends HasSerializationEngine> ObjectCSEPart<T> nu(
     T object,
     String partId,
     boolean noReset)
@@ -128,5 +128,11 @@ public class ObjectCSEPart<T extends HasSerializationEngine>
     if (!skipNextPostload)
       object.getSerializationEngine().postLoad();
     skipNextPostload = false;
+  }
+
+  @Override
+  public void resetToDefaultState()
+  {
+    object.getSerializationEngine().resetToDefaultState();
   }
 }

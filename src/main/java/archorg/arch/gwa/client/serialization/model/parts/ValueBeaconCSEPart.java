@@ -18,7 +18,7 @@ public abstract class ValueBeaconCSEPart<T>
 
   private final ValueSerializationEngine<T> engine;
 
-  public static <T> ValueBeaconCSEPart<T> createStatic(
+  public static <T> ValueBeaconCSEPart<T> nu(
     String beaconID,
     SimpleBeacon<T> beacon,
     T default_value,
@@ -103,5 +103,11 @@ public abstract class ValueBeaconCSEPart<T>
   public void connectToEnvironment()
   {
     // nothing to do
+  }
+
+  @Override
+  public void resetToDefaultState()
+  {
+    beacon.setIfNotEqual(default_value);
   }
 }

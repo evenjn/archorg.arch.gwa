@@ -41,9 +41,29 @@ public class StateTransitionActionImpl
     });
   }
 
+  /**
+   * Creates an action that is immediately initialized and is never updated.
+   * 
+   * @param transition
+   */
+  public StateTransitionActionImpl(
+    final Transition transition)
+  {
+    this.transition = transition;
+    next_state =
+      new SimpleBeaconImpl<String>(statemanager.serialize(transition));
+  }
+
+  public static void createAndExecute(
+    Transition transition)
+  {
+    statemanager.store(statemanager.serialize(transition));
+  }
+
   @Override
   public void execute()
   {
+    next_state.setNevertheless(statemanager.serialize(transition));
     statemanager.store(next_state.get());
   }
 

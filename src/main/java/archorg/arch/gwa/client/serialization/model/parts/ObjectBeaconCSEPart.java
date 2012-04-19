@@ -269,4 +269,26 @@ public abstract class ObjectBeaconCSEPart<T extends HasSerializationEngine>
     if (beacon.isNotNull())
       beacon.get().getSerializationEngine().connectToEnvironment();
   }
+
+  @Override
+  public void resetToDefaultState()
+  {
+    if (default_is_null)
+    {
+      // it's a reset to null
+      if (beacon.isNotNull())
+      {
+        claudenda_service.close();
+      }
+      beacon.setIfNotEqual(null);
+      return;
+    }
+    if (beacon.isNull())
+    {
+      claudenda_service = ClaudendaServiceFactory.create(getClass().getName());
+      beacon.setIfNotEqual(create(claudenda_service));
+    }
+    // it's a reset!
+    beacon.get().getSerializationEngine().resetToDefaultState();
+  }
 }

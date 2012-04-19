@@ -1,6 +1,10 @@
 package archorg.arch.gwa.client.serialization.model;
 
+import archorg.arch.gwa.client.serialization.Resettable;
+
 public interface SerializationEngine
+  extends
+  Resettable
 {
   /**
    * 
