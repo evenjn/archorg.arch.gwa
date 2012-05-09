@@ -21,7 +21,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class Archorg_arch_gwa implements EntryPoint
+public class Client implements EntryPoint
 {
   /**
    * The message displayed to the user when the server cannot be reached or
@@ -34,8 +34,8 @@ public class Archorg_arch_gwa implements EntryPoint
   /**
    * Create a remote service proxy to talk to the server-side Greeting service.
    */
-  private final GreetingServiceAsync greetingService = GWT
-    .create(GreetingService.class);
+  private final ServiceAsync greetingService = GWT
+    .create(Service.class);
 
   /**
    * This is the entry point method.
