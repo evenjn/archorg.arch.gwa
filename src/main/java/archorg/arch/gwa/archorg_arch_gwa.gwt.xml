@@ -11,7 +11,7 @@
   <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/> -->
   <!-- Other module inherits -->
   <!-- Specify the app entry point class. -->
-  <entry-point class='archorg.arch.gwa.client.Archorg_arch_gwa' />
+  <entry-point class='archorg.arch.gwa.client.Client' />
   <!-- Specify the paths for translatable code -->
   <source path='client' />
   <source path='shared' />

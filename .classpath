@@ -29,10 +29,22 @@
   </classpathentry>
   <classpathentry
     kind="con"
-    path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER" />
+    path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+    <attributes>
+      <attribute
+        name="org.eclipse.jst.component.dependency"
+        value="/WEB-INF/lib" />
+    </attributes>
+  </classpathentry>
   <classpathentry
     kind="con"
-    path="com.google.gwt.eclipse.core.GWT_CONTAINER" />
+    path="com.google.gwt.eclipse.core.GWT_CONTAINER/GWT-2.4.0">
+    <attributes>
+      <attribute
+        name="org.eclipse.jst.component.nondependency"
+        value="" />
+    </attributes>
+  </classpathentry>
   <classpathentry
     kind="con"
     path="org.eclipse.jst.j2ee.internal.web.container" />

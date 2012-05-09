@@ -1,6 +1,6 @@
 package archorg.arch.gwa.server;
 
-import archorg.arch.gwa.client.GreetingService;
+import archorg.arch.gwa.client.Service;
 import archorg.arch.gwa.shared.FieldVerifier;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -10,8 +10,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
  * The server side implementation of the RPC service.
  */
 @SuppressWarnings("serial")
-public class GreetingServiceImpl extends RemoteServiceServlet
-  implements GreetingService
+public class ServiceImpl extends RemoteServiceServlet
+  implements Service
 {
   public String greetServer(String input) throws IllegalArgumentException
   {
