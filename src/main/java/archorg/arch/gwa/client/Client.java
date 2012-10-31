@@ -21,28 +21,29 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class Client implements EntryPoint
+public class Client
+  implements
+  EntryPoint
 {
   /**
    * The message displayed to the user when the server cannot be reached or
    * returns an error.
    */
   private static final String SERVER_ERROR = "An error occurred while "
-      + "attempting to contact the server. Please check your network "
-      + "connection and try again.";
+    + "attempting to contact the server. Please check your network "
+    + "connection and try again.";
 
   /**
    * Create a remote service proxy to talk to the server-side Greeting service.
    */
-  private final ServiceAsync greetingService = GWT
-    .create(Service.class);
+  private final ServiceAsync greetingService = GWT.create(Service.class);
 
   /**
    * This is the entry point method.
    */
   public void onModuleLoad()
   {
-    final Button sendButton = new Button("Send");
+    final Button sendButton = new Button(Properties.get("label.sendButton"));
     final TextBox nameField = new TextBox();
     nameField.setText("GWT User");
     final Label errorLabel = new Label();
@@ -77,7 +78,8 @@ public class Client implements EntryPoint
     // Add a handler to close the DialogBox
     closeButton.addClickHandler(new ClickHandler()
     {
-      public void onClick(ClickEvent event)
+      public void onClick(
+        ClickEvent event)
       {
         dialogBox.hide();
         sendButton.setEnabled(true);
@@ -85,12 +87,16 @@ public class Client implements EntryPoint
       }
     });
     // Create a handler for the sendButton and nameField
-    class MyHandler implements ClickHandler, KeyUpHandler
+    class MyHandler
+      implements
+      ClickHandler,
+      KeyUpHandler
     {
       /**
        * Fired when the user clicks on the sendButton.
        */
-      public void onClick(ClickEvent event)
+      public void onClick(
+        ClickEvent event)
       {
         sendNameToServer();
       }
@@ -98,7 +104,8 @@ public class Client implements EntryPoint
       /**
        * Fired when the user types in the nameField.
        */
-      public void onKeyUp(KeyUpEvent event)
+      public void onKeyUp(
+        KeyUpEvent event)
       {
         if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER)
         {
@@ -126,7 +133,8 @@ public class Client implements EntryPoint
         greetingService.greetServer(textToServer,
           new AsyncCallback<String>()
           {
-            public void onFailure(Throwable caught)
+            public void onFailure(
+              Throwable caught)
             {
               // Show the RPC error message to the user
               dialogBox.setText("Remote Procedure Call - Failure");
@@ -136,7 +144,8 @@ public class Client implements EntryPoint
               closeButton.setFocus(true);
             }
 
-            public void onSuccess(String result)
+            public void onSuccess(
+              String result)
             {
               dialogBox.setText("Remote Procedure Call");
               serverResponseLabel.removeStyleName("serverResponseLabelError");

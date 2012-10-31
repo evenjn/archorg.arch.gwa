@@ -30,6 +30,7 @@ sed -i "s/archorg_arch_gwa/${gwaID}/g" src/main/webapp/main.html
 sed -i "s/archorg/${orgID}/g" pom.xml
 sed -i "s/archorg/${orgID}/g" .project
 sed -i "s/archorg/${orgID}/g" src/main/java/archorg/arch/gwa/client/Client.java
+sed -i "s/archorg/${orgID}/g" src/main/java/archorg/arch/gwa/client/Properties.java
 sed -i "s/archorg/${orgID}/g" src/main/java/archorg/arch/gwa/client/Service.java
 sed -i "s/archorg/${orgID}/g" src/main/java/archorg/arch/gwa/client/ServiceAsync.java
 sed -i "s/archorg/${orgID}/g" src/main/java/archorg/arch/gwa/server/ServiceImpl.java
@@ -40,6 +41,7 @@ sed -i "s/archorg/${orgID}/g" src/main/webapp/main.html
 sed -i "s/${templateID}/${prodID}/g" pom.xml
 sed -i "s/${templateID}/${prodID}/g" .project
 sed -i "s/${templateID}/${prodID}/g" src/main/java/archorg/arch/gwa/client/Client.java
+sed -i "s/${templateID}/${prodID}/g" src/main/java/archorg/arch/gwa/client/Properties.java
 sed -i "s/${templateID}/${prodID}/g" src/main/java/archorg/arch/gwa/client/Service.java
 sed -i "s/${templateID}/${prodID}/g" src/main/java/archorg/arch/gwa/client/ServiceAsync.java
 sed -i "s/${templateID}/${prodID}/g" src/main/java/archorg/arch/gwa/server/ServiceImpl.java
